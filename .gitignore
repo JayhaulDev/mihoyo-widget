@@ -30,9 +30,11 @@ docs/superpowers/
 .DS_Store
 Thumbs.db
 
-# ── Editor ──
+# ── Editor (allow shared config) ──
 .vscode/*
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
 .idea
 *.suo
 *.ntvs*

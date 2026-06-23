@@ -8,9 +8,6 @@
   </head>
   <body>
     <div id="app">
-      <!-- Starlight ambient -->
-      <div id="starlight"></div>
-
       <!-- Drag Handle -->
       <div id="drag-handle" data-tauri-drag-region>
         <div class="handle-dots"><span></span><span></span><span></span></div>
@@ -18,7 +15,7 @@
 
       <!-- ════════ TAB 1: 仪表盘 ════════ -->
       <div id="tab-overview" class="tab-content active">
-        <div id="stamina-section">
+        <div class="widget-group stamina-group">
           <canvas id="stamina-ring" width="110" height="110"></canvas>
           <div id="stamina-text">
             <span id="stamina-current">--</span>
@@ -40,31 +37,33 @@
           <span id="player-level">Lv.--</span>
         </div>
 
-        <!-- 2×3 Status Grid -->
-        <div id="status-grid">
-          <div class="status-item" data-accent="green">
-            <span class="item-label">每日签到</span>
-            <span class="item-value" id="sign-value">--</span>
-          </div>
-          <div class="status-item" data-accent="accent">
-            <span class="item-label">派遣</span>
-            <span class="item-value" id="expedition-value">--</span>
-          </div>
-          <div class="status-item" data-accent="accent">
-            <span class="item-label">周期演算</span>
-            <span class="item-value" id="rogue-value">--</span>
-          </div>
-          <div class="status-item" data-accent="gold">
-            <span class="item-label">历战余响</span>
-            <span class="item-value" id="cocoon-value">--</span>
-          </div>
-          <div class="status-item" data-accent="accent">
-            <span class="item-label">每日实训</span>
-            <span class="item-value" id="train-value">--</span>
-          </div>
-          <div class="status-item">
-            <span class="item-label">成就</span>
-            <span class="item-value" id="achievement-value">--</span>
+        <div class="widget-group">
+          <!-- 2×3 Status Grid -->
+          <div id="status-grid">
+            <div class="status-item">
+              <span class="item-label">每日签到</span>
+              <span class="item-value" id="sign-value">--</span>
+            </div>
+            <div class="status-item">
+              <span class="item-label">派遣</span>
+              <span class="item-value" id="expedition-value">--</span>
+            </div>
+            <div class="status-item">
+              <span class="item-label">周期演算</span>
+              <span class="item-value" id="rogue-value">--</span>
+            </div>
+            <div class="status-item">
+              <span class="item-label">历战余响</span>
+              <span class="item-value" id="cocoon-value">--</span>
+            </div>
+            <div class="status-item">
+              <span class="item-label">每日实训</span>
+              <span class="item-value" id="train-value">--</span>
+            </div>
+            <div class="status-item">
+              <span class="item-label">成就</span>
+              <span class="item-value" id="achievement-value">--</span>
+            </div>
           </div>
         </div>
 
@@ -74,38 +73,45 @@
 
       <!-- ════════ TAB 2: 挑战 ════════ -->
       <div id="tab-battle" class="tab-content">
-        <div class="tab-section-title">🏆 挑战模式</div>
+        <div class="tab-section-title">
+          <!-- Trophy icon -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          挑战模式
+        </div>
 
         <div class="battle-card">
-          <div class="battle-card-header">🐉 忘却之庭</div>
-          <div class="battle-card-stars">⭐⭐⭐</div>
+          <div class="battle-card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue)"><path d="M12 2v20"/><path d="M20 12H4"/><path d="m15 4-3 3-3-3"/><path d="m9 20 3-3 3 3"/><path d="m4 15 3-3-3-3"/><path d="m20 9-3 3 3 3"/></svg>忘却之庭</div>
+          <div class="battle-card-stars" id="forgotten-hall-stars"></div>
           <div class="battle-card-stat" id="forgotten-hall-stat">--</div>
           <div class="battle-card-date"></div>
           <div class="battle-card-progress" style="display:none"><div class="challenge-bar-fill"></div></div>
         </div>
         <div class="battle-card">
-          <div class="battle-card-header">📖 虚构叙事</div>
-          <div class="battle-card-stars">⭐⭐⭐</div>
+          <div class="battle-card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue)"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><path d="M8 11h8"/><path d="M8 7h6"/></svg>虚构叙事</div>
+          <div class="battle-card-stars" id="pure-fiction-stars"></div>
           <div class="battle-card-stat" id="pure-fiction-stat">--</div>
           <div class="battle-card-date"></div>
           <div class="battle-card-progress" style="display:none"><div class="challenge-bar-fill"></div></div>
         </div>
         <div class="battle-card">
-          <div class="battle-card-header">🌑 末日幻影</div>
-          <div class="battle-card-stars">⭐⭐⭐</div>
+          <div class="battle-card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue)"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M12 3a9 9 0 0 1 9 9"/><circle cx="12" cy="12" r="3"/></svg>末日幻影</div>
+          <div class="battle-card-stars" id="apocalyptic-shadow-stars"></div>
           <div class="battle-card-stat" id="apocalyptic-shadow-stat">--</div>
           <div class="battle-card-date"></div>
           <div class="battle-card-progress" style="display:none"><div class="challenge-bar-fill"></div></div>
         </div>
         <div class="battle-card">
-          <div class="battle-card-header">🔥 最高挑战</div>
+          <div class="battle-card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--orange)"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 12h8"/><path d="M10 16h4"/></svg>最高挑战</div>
           <div class="battle-card-stat" id="challenge-peak-stat">--</div>
           <div class="battle-card-date"></div>
           <div class="battle-card-progress" style="display:none"><div class="challenge-bar-fill"></div></div>
         </div>
 
         <div class="divider"></div>
-        <div class="tab-section-title">🎯 周常进度</div>
+        <div class="tab-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          周常进度
+        </div>
 
         <div class="weekly-row">
           <span class="weekly-label">差分宇宙</span>
@@ -127,7 +133,10 @@
       <!-- ════════ TAB 3: 活动·档案 ════════ -->
       <div id="tab-more" class="tab-content">
         <div id="ledger-card">
-          <div class="tab-section-title">⭐ 开拓月历</div>
+          <div class="tab-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            开拓月历
+          </div>
           <div class="ledger-row">
             <span>星琼</span>
             <span id="ledger-hcoin">--</span>
@@ -146,7 +155,8 @@
 
         <div id="banner-section">
           <div class="tab-section-title" id="banner-toggle">
-            🎴 活动卡池 (<span id="banner-count">0</span>)
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            活动卡池 (<span id="banner-count">0</span>)
             <span id="banner-icon">▾</span>
           </div>
           <div id="banner-list"></div>
@@ -156,7 +166,8 @@
 
         <div id="archive-section" class="empty">
           <div class="tab-section-title" id="archive-toggle">
-            📚 模拟宇宙档案
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            模拟宇宙档案
             <span id="archive-icon">▾</span>
           </div>
           <div id="archive-content" class="hidden"></div>
@@ -165,46 +176,51 @@
 
       <!-- ════════ Settings View ════════ -->
       <div id="settings-view" class="tab-content">
-        <div class="tab-section-title">⚙ 设置</div>
-        <div class="setting-row">
-          <label>Cookie</label>
-          <input type="password" id="input-cookie" placeholder="完整 Cookie" />
+        <div class="tab-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          设置
         </div>
-        <div class="setting-row">
-          <label>SToken</label>
-          <input type="password" id="input-stoken" placeholder="SToken" />
-        </div>
-        <div class="setting-row">
-          <label>UID</label>
-          <input type="text" id="input-uid" placeholder="游戏 UID" />
-        </div>
-        <div class="setting-row">
-          <label>STUID</label>
-          <input type="text" id="input-stuid" placeholder="账户 STUID" />
-        </div>
-        <div class="setting-row">
-          <label>MID</label>
-          <input type="text" id="input-mid" placeholder="账户 MID" />
-        </div>
-        <div class="setting-hint">修改后自动保存并刷新</div>
-        <div class="button-row">
-          <button id="settings-save">💾 保存</button>
-          <button id="settings-close">取消</button>
+        <div class="widget-group">
+          <div class="setting-row">
+            <label>Cookie</label>
+            <input type="password" id="input-cookie" placeholder="完整 Cookie" />
+          </div>
+          <div class="setting-row">
+            <label>SToken</label>
+            <input type="password" id="input-stoken" placeholder="SToken" />
+          </div>
+          <div class="setting-row">
+            <label>UID</label>
+            <input type="text" id="input-uid" placeholder="游戏 UID" />
+          </div>
+          <div class="setting-row">
+            <label>STUID</label>
+            <input type="text" id="input-stuid" placeholder="账户 STUID" />
+          </div>
+          <div class="setting-row">
+            <label>MID</label>
+            <input type="text" id="input-mid" placeholder="账户 MID" />
+          </div>
+          <div class="setting-hint">修改后自动保存并刷新</div>
+          <div class="button-row">
+            <button id="settings-save">保存</button>
+            <button id="settings-close">取消</button>
+          </div>
         </div>
       </div>
 
       <!-- ════════ Tab Bar ════════ -->
       <div id="tab-bar">
         <div class="tab-item active" data-tab="overview">
-          <span class="tab-icon">📊</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           <span class="tab-label">仪表盘</span>
         </div>
         <div class="tab-item" data-tab="battle">
-          <span class="tab-icon">⚔</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span class="tab-label">挑战</span>
         </div>
         <div class="tab-item" data-tab="more">
-          <span class="tab-icon">📅</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span class="tab-label">活动</span>
         </div>
       </div>
@@ -213,9 +229,15 @@
       <div id="footer">
         <span id="last-update">--</span>
         <div id="footer-actions">
-          <button id="theme-btn" title="切换主题">☀</button>
-          <button id="settings-btn" title="设置">⚙</button>
-          <button id="refresh-btn" title="刷新">⟳</button>
+          <button id="theme-btn" title="切换主题">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+          <button id="settings-btn" title="设置">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+          <button id="refresh-btn" title="刷新">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
         </div>
       </div>
     </div>

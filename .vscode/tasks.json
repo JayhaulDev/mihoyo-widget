@@ -1,0 +1,71 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "frontend-build",
+      "type": "npm",
+      "script": "build",
+      "path": "packages/frontend",
+      "group": "build",
+      "presentation": { "reveal": "silent" }
+    },
+    {
+      "label": "vite-dev",
+      "type": "npm",
+      "script": "dev",
+      "path": "packages/frontend",
+      "isBackground": true,
+      "presentation": { "reveal": "never" }
+    },
+    {
+      "label": "cargo-build-debug",
+      "type": "shell",
+      "command": "cargo build",
+      "options": { "cwd": "${workspaceFolder}/apps/desktop" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$rustc"],
+      "presentation": { "reveal": "silent" }
+    },
+    {
+      "label": "cargo-build-release",
+      "type": "shell",
+      "command": "cargo build --release",
+      "options": { "cwd": "${workspaceFolder}/apps/desktop" },
+      "group": "build",
+      "problemMatcher": ["$rustc"],
+      "presentation": { "reveal": "silent" }
+    },
+    {
+      "label": "build-all-debug",
+      "type": "shell",
+      "command": "echo 'build-all-debug'",
+      "dependsOn": ["frontend-build", "cargo-build-debug"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "build-all-release",
+      "type": "shell",
+      "command": "echo 'build-all-release'",
+      "dependsOn": ["frontend-build", "cargo-build-release"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "tauri-dev",
+      "type": "shell",
+      "command": "cargo tauri dev",
+      "options": { "cwd": "${workspaceFolder}/apps/desktop" },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^(.*)$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Your app should be running"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    }
+  ]
+}

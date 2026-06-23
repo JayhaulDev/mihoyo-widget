@@ -19,7 +19,9 @@ let currentTab = 'overview';
 let previousTab = 'overview';
 let isSettingsOpen = false;
 
-function $(id) { return document.getElementById(id); }
+function $(id) {
+  return document.getElementById(id);
+}
 
 const canvas = $('stamina-ring');
 const ctx = canvas?.getContext('2d');
@@ -29,34 +31,47 @@ let animPct = 0;
 function switchTab(tab) {
   if (tab === 'settings') {
     isSettingsOpen = !isSettingsOpen;
-    if (isSettingsOpen) { previousTab = currentTab; currentTab = 'settings'; loadSettingsForm(); }
-    else { currentTab = previousTab; }
+    if (isSettingsOpen) {
+      previousTab = currentTab;
+      currentTab = 'settings';
+      loadSettingsForm();
+    } else {
+      currentTab = previousTab;
+    }
     renderTab();
     return;
   }
-  if (isSettingsOpen) { isSettingsOpen = false; }
+  if (isSettingsOpen) {
+    isSettingsOpen = false;
+  }
   currentTab = tab;
   updateTabBar();
   renderTab();
 }
 
 function updateTabBar() {
-  document.querySelectorAll('.tab-item').forEach(el => {
+  document.querySelectorAll('.tab-item').forEach((el) => {
     el.classList.toggle('active', el.dataset.tab === currentTab);
   });
 }
 
 function renderTab() {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach((el) => el.classList.remove('active'));
   if (isSettingsOpen || currentTab === 'settings') {
     $('settings-view')?.classList.add('active');
   } else {
     const panel = document.getElementById(`tab-${currentTab}`);
     if (panel) panel.classList.add('active');
     switch (currentTab) {
-      case 'overview': renderDashboard(); break;
-      case 'battle': renderChallengeTab(); break;
-      case 'more': renderMoreTab(); break;
+      case 'overview':
+        renderDashboard();
+        break;
+      case 'battle':
+        renderChallengeTab();
+        break;
+      case 'more':
+        renderMoreTab();
+        break;
     }
   }
   $('settings-btn')?.classList.toggle('active', isSettingsOpen);
@@ -79,7 +94,9 @@ function renderDashboard() {
   if (d.current_reserve_stamina > 0) {
     $('reserve-row').classList.remove('hidden');
     $('reserve-value').textContent = d.is_reserve_stamina_full ? '已满' : d.current_reserve_stamina;
-  } else { $('reserve-row').classList.add('hidden'); }
+  } else {
+    $('reserve-row').classList.add('hidden');
+  }
 
   // Sign
   const sv = $('sign-value');
@@ -113,9 +130,11 @@ function renderDashboard() {
   // Player info
   if (playerInfo) {
     $('player-name').textContent = playerInfo.stats?.active_days
-      ? `开拓${playerInfo.stats.active_days}天` : '未知开拓者';
+      ? `开拓${playerInfo.stats.active_days}天`
+      : '未知开拓者';
     $('player-level').textContent = `Lv.${playerInfo.avatar_list?.[0]?.level || '--'}`;
-    $('achievement-value').textContent = playerInfo.stats?.achievement_num?.toLocaleString() || '--';
+    $('achievement-value').textContent =
+      playerInfo.stats?.achievement_num?.toLocaleString() || '--';
   }
 
   // Season info row
@@ -131,14 +150,16 @@ function renderSeasonRow() {
     return;
   }
   el.classList.remove('hidden');
-  const parts = periodicAct.acts.map(a => {
-    const name = a.season_name || '';
-    const lvl = a.season_level || '';
-    if (a.division_level && a.division_level !== '0') {
-      return `${name || '财富造物主'} · 段位${a.division_level}`;
-    }
-    return name ? `${name} · Lv.${lvl}` : '';
-  }).filter(Boolean);
+  const parts = periodicAct.acts
+    .map((a) => {
+      const name = a.season_name || '';
+      const lvl = a.season_level || '';
+      if (a.division_level && a.division_level !== '0') {
+        return `${name || '财富造物主'} · 段位${a.division_level}`;
+      }
+      return name ? `${name} · Lv.${lvl}` : '';
+    })
+    .filter(Boolean);
   el.textContent = parts.join('  │  ');
 }
 
@@ -155,8 +176,18 @@ function renderChallengeTab() {
   // Weekly progress bars
   const d = widgetData;
   if (!d) return;
-  renderProgressBar('weekly-rogue-bar', d.rogue_tourn_weekly_cur, d.rogue_tourn_weekly_max, '差分宇宙');
-  renderProgressBar('weekly-gold-bar', d.grid_fight_weekly_cur, d.grid_fight_weekly_max, '财富造物主');
+  renderProgressBar(
+    'weekly-rogue-bar',
+    d.rogue_tourn_weekly_cur,
+    d.rogue_tourn_weekly_max,
+    '差分宇宙',
+  );
+  renderProgressBar(
+    'weekly-gold-bar',
+    d.grid_fight_weekly_cur,
+    d.grid_fight_weekly_max,
+    '财富造物主',
+  );
   renderProgressBar('weekly-train-bar', d.current_train_score, d.max_train_score, '每日实训');
 }
 
@@ -180,23 +211,25 @@ function renderChallengeCard(prefix, data, isPeak) {
   const label = isPeak ? '层' : '星';
 
   statEl.textContent = `${cur}/${max}${label}`;
-  statEl.style.color = cur >= max ? 'var(--green)' : 'var(--gold)';
+  statEl.style.color = cur >= max ? 'var(--green)' : 'var(--orange)';
 
   // Stars for non-peak
   if (!isPeak) {
     const starEl = card.querySelector('.battle-card-stars');
     if (starEl) {
-      const filled = '⭐'.repeat(Math.min(data.star_num, data.max_star));
-      const empty = '☆'.repeat(Math.max(0, data.max_star - data.star_num));
-      starEl.textContent = filled + empty || '—';
+      const filled = starFilled.repeat(Math.min(data.star_num, data.max_star));
+      const empty = starEmpty.repeat(Math.max(0, data.max_star - data.star_num));
+      starEl.innerHTML = filled + empty || '—';
     }
   }
 
   // Date
   if (dateEl) {
     if (data.begin_time && data.end_time) {
-      dateEl.textContent = `${data.begin_time.slice(5,10)} ~ ${data.end_time.slice(5,10)}`;
-    } else { dateEl.textContent = ''; }
+      dateEl.textContent = `${data.begin_time.slice(5, 10)} ~ ${data.end_time.slice(5, 10)}`;
+    } else {
+      dateEl.textContent = '';
+    }
   }
 
   // Progress bar for peak mode
@@ -255,7 +288,7 @@ function makeBannerCard(act) {
 
   const tag = document.createElement('span');
   tag.className = 'banner-tag';
-  const typeStyle = (act.act_type === '双倍' || act.act_type === '签到') ? '活动' : act.act_type;
+  const typeStyle = act.act_type === '双倍' || act.act_type === '签到' ? '活动' : act.act_type;
   tag.dataset.type = typeStyle;
   tag.textContent = act.act_type;
 
@@ -291,12 +324,23 @@ function makeBannerCard(act) {
   days.className = 'banner-days';
   let dl = act.days_left;
   if (dl == null && act.end_time) {
-    try { dl = Math.ceil((new Date(act.end_time).getTime() - Date.now()) / 86400000); } catch {}
+    try {
+      dl = Math.ceil((new Date(act.end_time).getTime() - Date.now()) / 86400000);
+    } catch {}
   }
-  if (dl > 3) { days.textContent = `剩${dl}天`; days.className = 'banner-days ok'; }
-  else if (dl > 0) { days.textContent = `剩${dl}天`; days.className = 'banner-days warn'; }
-  else if (dl === 0) { days.textContent = '最后一天'; days.className = 'banner-days urgent'; }
-  else { days.textContent = '已结束'; days.className = 'banner-days over'; }
+  if (dl > 3) {
+    days.textContent = `剩${dl}天`;
+    days.className = 'banner-days ok';
+  } else if (dl > 0) {
+    days.textContent = `剩${dl}天`;
+    days.className = 'banner-days warn';
+  } else if (dl === 0) {
+    days.textContent = '最后一天';
+    days.className = 'banner-days urgent';
+  } else {
+    days.textContent = '已结束';
+    days.className = 'banner-days over';
+  }
 
   timeRow.appendChild(dateRange);
   timeRow.appendChild(days);
@@ -331,7 +375,12 @@ function makeBannerCard(act) {
     const fill = document.createElement('div');
     fill.className = 'banner-progress-fill';
     let pct = 0;
-    if (act.end_time && act.begin_time && act.end_time.length >= 10 && act.begin_time.length >= 10) {
+    if (
+      act.end_time &&
+      act.begin_time &&
+      act.end_time.length >= 10 &&
+      act.begin_time.length >= 10
+    ) {
       try {
         const total = new Date(act.end_time).getTime() - new Date(act.begin_time).getTime();
         const elapsed = Date.now() - new Date(act.begin_time).getTime();
@@ -364,7 +413,10 @@ function renderBanners() {
   const total = pools.length + events.length;
 
   const section = $('banner-section');
-  if (!total) { section?.classList.add('empty'); return; }
+  if (!total) {
+    section?.classList.add('empty');
+    return;
+  }
   section?.classList.remove('empty');
   $('banner-count').textContent = total;
 
@@ -374,14 +426,14 @@ function renderBanners() {
   if (pools.length) {
     const h = document.createElement('div');
     h.className = 'tab-section-title';
-    h.textContent = '🎴 角色 / 光锥';
+    h.textContent = '角色 / 光锥';
     list.appendChild(h);
     for (const act of pools) list.appendChild(makeBannerCard(act));
   }
   if (events.length) {
     const h = document.createElement('div');
     h.className = 'tab-section-title';
-    h.textContent = '🎉 限时活动';
+    h.textContent = '限时活动';
     list.appendChild(h);
     for (const act of events) list.appendChild(makeBannerCard(act));
   }
@@ -439,36 +491,70 @@ function drawRing(current, max) {
   animPct += (targetPct - animPct) * 0.15;
   if (Math.abs(animPct - targetPct) < 0.001) animPct = targetPct;
 
-  const w = canvas.width, h = canvas.height;
+  const w = canvas.width,
+    h = canvas.height;
   ctx.clearRect(0, 0, w, h);
-  const cx = w / 2, cy = h / 2, r = 44, lw = 5;
+  const cx = w / 2,
+    cy = h / 2,
+    r = 44,
+    lw = 5;
 
   const g = ctx.createRadialGradient(cx, cy, r - 6, cx, cy, r + 12);
-  g.addColorStop(0, 'rgba(79, 195, 247, 0.04)');
+  g.addColorStop(0, 'rgba(10, 132, 255, 0.03)');
   g.addColorStop(1, 'transparent');
-  ctx.beginPath(); ctx.arc(cx, cy, r + 10, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 10, 0, Math.PI * 2);
+  ctx.fillStyle = g;
+  ctx.fill();
 
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = lw; ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = lw;
+  ctx.stroke();
 
   const pct = Math.min(Math.max(animPct, 0), 1);
   const start = -Math.PI / 2;
   const end = start + Math.PI * 2 * pct;
 
   const grad = ctx.createConicGradient(start, cx, cy);
-  if (pct >= 0.95) { grad.addColorStop(0, '#ff5252'); grad.addColorStop(1, '#ff8a80'); }
-  else if (pct >= 0.8) { grad.addColorStop(0, '#ffb300'); grad.addColorStop(1, '#ffd54f'); }
-  else { grad.addColorStop(0, '#0288d1'); grad.addColorStop(1, '#4fc3f7'); }
+  if (pct >= 0.95) {
+    grad.addColorStop(0, '#FF453A');
+    grad.addColorStop(1, '#FF6961');
+  } else if (pct >= 0.8) {
+    grad.addColorStop(0, '#FF9F0A');
+    grad.addColorStop(1, '#FFD60A');
+  } else {
+    grad.addColorStop(0, '#0A84FF');
+    grad.addColorStop(1, '#64D2FF');
+  }
 
-  ctx.beginPath(); ctx.arc(cx, cy, r, start, end);
-  ctx.strokeStyle = grad; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, start, end);
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = lw;
+  ctx.lineCap = 'round';
+  ctx.stroke();
 
   if (pct > 0.02) {
-    const a = end, dx = cx + Math.cos(a) * r, dy = cy + Math.sin(a) * r;
-    const c = pct >= 0.95 ? '#ff5252' : pct >= 0.8 ? '#ffd54f' : '#4fc3f7';
-    ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI * 2); ctx.fillStyle = c; ctx.fill();
-    ctx.beginPath(); ctx.arc(dx, dy, 6, 0, Math.PI * 2);
-    ctx.fillStyle = pct >= 0.95 ? 'rgba(255,82,82,0.2)' : pct >= 0.8 ? 'rgba(255,213,79,0.2)' : 'rgba(79,195,247,0.2)'; ctx.fill();
+    const a = end,
+      dx = cx + Math.cos(a) * r,
+      dy = cy + Math.sin(a) * r;
+    const c = pct >= 0.95 ? '#FF453A' : pct >= 0.8 ? '#FFD60A' : '#0A84FF';
+    ctx.beginPath();
+    ctx.arc(dx, dy, 3, 0, Math.PI * 2);
+    ctx.fillStyle = c;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(dx, dy, 6, 0, Math.PI * 2);
+    ctx.fillStyle =
+      pct >= 0.95
+        ? 'rgba(255,69,58,0.2)'
+        : pct >= 0.8
+          ? 'rgba(255,214,10,0.2)'
+          : 'rgba(10,132,255,0.2)';
+    ctx.fill();
   }
 
   if (Math.abs(animPct - targetPct) > 0.001) requestAnimationFrame(() => drawRing(current, max));
@@ -476,25 +562,38 @@ function drawRing(current, max) {
 
 function formatTime(secs) {
   if (secs <= 0) return '已满';
-  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60);
+  const h = Math.floor(secs / 3600),
+    m = Math.floor((secs % 3600) / 60);
   return h > 0 ? `${h}h ${m}m` : `${m}分钟`;
 }
 
 let recoveryInterval = null;
 function startRecoveryTimer(secs) {
   if (recoveryInterval) clearInterval(recoveryInterval);
-  if (secs <= 0) { $('recovery-time').textContent = '已满'; return; }
+  if (secs <= 0) {
+    $('recovery-time').textContent = '已满';
+    return;
+  }
   let r = secs;
   const tick = () => {
-    if (r <= 0) { $('recovery-time').textContent = '已满'; clearInterval(recoveryInterval); recoveryInterval = null; return; }
-    $('recovery-time').textContent = formatTime(r); r--;
+    if (r <= 0) {
+      $('recovery-time').textContent = '已满';
+      clearInterval(recoveryInterval);
+      recoveryInterval = null;
+      return;
+    }
+    $('recovery-time').textContent = formatTime(r);
+    r--;
   };
-  tick(); recoveryInterval = setInterval(tick, 1000);
+  tick();
+  recoveryInterval = setInterval(tick, 1000);
 }
 
 // ── Settings ──
 async function loadSettingsForm() {
-  try { config = await invoke('load_env_config'); } catch {}
+  try {
+    config = await invoke('load_env_config');
+  } catch {}
   if (config) {
     $('input-cookie').value = config.cookie || '';
     $('input-stoken').value = config.stoken || '';
@@ -507,7 +606,11 @@ async function loadSettingsForm() {
 // ── Startup ──
 async function loadData() {
   let cached;
-  try { cached = await invoke('get_all_cached'); } catch {}
+  try {
+    cached = await invoke('get_all_cached');
+  } catch (e) {
+    console.error('读取缓存失败:', e);
+  }
   if (cached) {
     widgetData = cached.widget;
     playerInfo = cached.player;
@@ -521,62 +624,150 @@ async function loadData() {
     rogueArchive = cached.rogue_archive;
   }
 
-  try { config = await invoke('load_env_config'); } catch {}
+  try {
+    config = await invoke('load_env_config');
+  } catch (e) {
+    console.error('加载配置失败:', e);
+  }
+
+  // 无缓存数据时显示 loading 占位
+  if (!widgetData) {
+    $('player-name').textContent = '正在获取数据...';
+  }
+
   renderTab();
-  try { await invoke('force_refresh'); } catch (e) { console.warn('Refresh failed:', e); }
+  try {
+    await invoke('force_refresh');
+  } catch (e) {
+    console.warn('Refresh failed:', e);
+  }
 }
 
 async function doRefresh() {
   $('refresh-btn').classList.add('spinning');
-  try { await invoke('force_refresh'); } catch (e) { console.error('Refresh failed:', e); }
-  finally { setTimeout(() => $('refresh-btn').classList.remove('spinning'), 600); }
+  try {
+    await invoke('force_refresh');
+    $('last-update').textContent = new Date().toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  } catch (e) {
+    console.error('Refresh failed:', e);
+    $('last-update').textContent =
+      '刷新失败 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    const btn = $('refresh-btn');
+    btn.classList.add('spin-error');
+    setTimeout(() => btn.classList.remove('spin-error'), 2000);
+  } finally {
+    setTimeout(() => $('refresh-btn').classList.remove('spinning'), 600);
+  }
 }
 
 // ── Events ──
 listen('data-updated', (event) => {
   const p = event.payload;
-  if (p.widget) widgetData = p.widget;
-  if (p.player) playerInfo = p.player;
-  if (p.ledger) ledgerData = p.ledger;
-  if (p.banners) bannerData = p.banners;
-  if (p.forgotten_hall) forgottenHall = p.forgotten_hall;
-  if (p.pure_fiction) pureFiction = p.pure_fiction;
-  if (p.apocalyptic_shadow) apocalypticShadow = p.apocalyptic_shadow;
-  if (p.periodic_act) periodicAct = p.periodic_act;
-  if (p.challenge_peak) challengePeak = p.challenge_peak;
-  if (p.rogue_archive) rogueArchive = p.rogue_archive;
-  $('last-update').textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  let changed = false;
+  if (p.widget) {
+    widgetData = p.widget;
+    changed = true;
+  }
+  if (p.player) {
+    playerInfo = p.player;
+    changed = true;
+  }
+  if (p.ledger) {
+    ledgerData = p.ledger;
+    changed = true;
+  }
+  if (p.banners) {
+    bannerData = p.banners;
+    changed = true;
+  }
+  if (p.forgotten_hall) {
+    forgottenHall = p.forgotten_hall;
+    changed = true;
+  }
+  if (p.pure_fiction) {
+    pureFiction = p.pure_fiction;
+    changed = true;
+  }
+  if (p.apocalyptic_shadow) {
+    apocalypticShadow = p.apocalyptic_shadow;
+    changed = true;
+  }
+  if (p.periodic_act) {
+    periodicAct = p.periodic_act;
+    changed = true;
+  }
+  if (p.challenge_peak) {
+    challengePeak = p.challenge_peak;
+    changed = true;
+  }
+  if (p.rogue_archive) {
+    rogueArchive = p.rogue_archive;
+    changed = true;
+  }
+  if (changed) {
+    $('last-update').textContent = new Date().toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  }
   renderTab();
 });
 
 // ── Drag ──
 const dragHandle = $('drag-handle');
-let isDragging = false, dragStartX, dragStartY, winStartX, winStartY;
+let isDragging = false,
+  dragStartX,
+  dragStartY,
+  winStartX,
+  winStartY;
 
 dragHandle.addEventListener('mousedown', async (e) => {
   if (e.button !== 0) return;
   e.preventDefault();
-  try { await getCurrentWindow().startDragging(); }
-  catch {
+  try {
+    await getCurrentWindow().startDragging();
+  } catch {
     isDragging = true;
-    try { const pos = await getCurrentWindow().position(); winStartX = pos.x; winStartY = pos.y; } catch { winStartX = 0; winStartY = 0; }
-    dragStartX = e.screenX; dragStartY = e.screenY;
+    try {
+      const pos = await getCurrentWindow().position();
+      winStartX = pos.x;
+      winStartY = pos.y;
+    } catch {
+      winStartX = 0;
+      winStartY = 0;
+    }
+    dragStartX = e.screenX;
+    dragStartY = e.screenY;
   }
 });
 
 document.addEventListener('mousemove', (e) => {
   if (!isDragging) return;
-  getCurrentWindow().setPosition({ x: winStartX + e.screenX - dragStartX, y: winStartY + e.screenY - dragStartY }).catch(() => {});
+  getCurrentWindow()
+    .setPosition({ x: winStartX + e.screenX - dragStartX, y: winStartY + e.screenY - dragStartY })
+    .catch(() => {});
 });
 
-document.addEventListener('mouseup', () => { isDragging = false; });
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+});
 
 // ── Theme toggle ──
 let darkTheme = localStorage.getItem('mihoyo-theme') !== 'light';
 
+const moonSvg =
+  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const sunSvg =
+  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+
 function applyTheme() {
   document.documentElement.dataset.theme = darkTheme ? 'dark' : 'light';
-  $('theme-btn').textContent = darkTheme ? '☀' : '☾';
+  $('theme-btn').innerHTML = darkTheme ? sunSvg : moonSvg;
 }
 
 function toggleTheme() {
@@ -585,46 +776,66 @@ function toggleTheme() {
   applyTheme();
 }
 
-// ── Starlight ──
-function initStarlight() {
-  const container = $('starlight');
-  if (!container) return;
-  for (let i = 0; i < 15; i++) {
-    const dot = document.createElement('span');
-    dot.style.left = `${10 + Math.random() * 80}%`;
-    dot.style.top = `${5 + Math.random() * 85}%`;
-    dot.style.setProperty('--d', `${2 + Math.random() * 3}s`);
-    dot.style.setProperty('--dd', `${Math.random() * 5}s`);
-    dot.style.setProperty('--o', `${0.2 + Math.random() * 0.6}`);
-    container.appendChild(dot);
-  }
-}
+// ── Star SVG for battle cards ──
+const starFilled =
+  '<svg width="10" height="10" viewBox="0 0 24 24" fill="var(--yellow)" stroke="var(--yellow)" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+const starEmpty =
+  '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--gray-light)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
 // ── Event wiring ──
-document.querySelectorAll('.tab-item').forEach(el => {
+document.querySelectorAll('.tab-item').forEach((el) => {
   el.addEventListener('click', () => switchTab(el.dataset.tab));
 });
 
 $('settings-btn').addEventListener('click', () => switchTab('settings'));
-document.addEventListener('contextmenu', (e) => { e.preventDefault(); switchTab('settings'); });
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  switchTab('settings');
+});
 
 $('settings-save').addEventListener('click', async () => {
+  const cookie = $('input-cookie').value.trim();
+  const uid = $('input-uid').value.trim();
+  if (!cookie) {
+    alert('Cookie 不能为空');
+    return;
+  }
+  if (uid && !/^\d+$/.test(uid)) {
+    alert('UID 格式不正确（应为纯数字）');
+    return;
+  }
   const nc = {
-    cookie: $('input-cookie').value, stoken: $('input-stoken').value,
-    uid: $('input-uid').value, stuid: $('input-stuid').value, mid: $('input-mid').value,
-    device_id: config?.device_id || '', device_fp: config?.device_fp || '',
-    seed_id: config?.seed_id || '', seed_time: config?.seed_time || '',
-    region: config?.region || 'prod_gf_cn', poll_interval_secs: config?.poll_interval_secs || 90,
+    cookie,
+    stoken: $('input-stoken').value,
+    uid,
+    stuid: $('input-stuid').value,
+    mid: $('input-mid').value,
+    device_id: config?.device_id || '',
+    device_fp: config?.device_fp || '',
+    seed_id: config?.seed_id || '',
+    seed_time: config?.seed_time || '',
+    region: config?.region || 'prod_gf_cn',
+    poll_interval_secs: config?.poll_interval_secs || 90,
   };
   try {
     await invoke('save_config', { newConfig: nc });
-    isSettingsOpen = false; currentTab = previousTab; updateTabBar(); renderTab();
-    config = nc; await doRefresh();
-  } catch (e) { console.error('Save failed:', e); alert('保存失败: ' + e); }
+    isSettingsOpen = false;
+    currentTab = previousTab;
+    updateTabBar();
+    renderTab();
+    config = nc;
+    await doRefresh();
+  } catch (e) {
+    console.error('保存失败:', e);
+    alert('保存失败: ' + e);
+  }
 });
 
 $('settings-close').addEventListener('click', () => {
-  isSettingsOpen = false; currentTab = previousTab; updateTabBar(); renderTab();
+  isSettingsOpen = false;
+  currentTab = previousTab;
+  updateTabBar();
+  renderTab();
 });
 
 $('refresh-btn').addEventListener('click', doRefresh);
@@ -642,5 +853,4 @@ $('archive-toggle')?.addEventListener('click', () => {
 
 // ── Init ──
 applyTheme();
-initStarlight();
 loadData();

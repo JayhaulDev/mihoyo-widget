@@ -1,0 +1,69 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // ──────────── Rust 后端 ────────────
+    {
+      "name": "🔧 Rust + Vite (hot reload)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/target/debug/mihoyo-widget-desktop",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "cargo-build-debug"
+    },
+    {
+      "name": "🔧 Rust + production build",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/target/debug/mihoyo-widget-desktop",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build-all-debug"
+    },
+    {
+      "name": "🔧 Rust Release (production)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/target/release/mihoyo-widget-desktop",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build-all-release"
+    },
+
+    // ──────────── 前端浏览器预览 ────────────
+    {
+      "type": "msedge",
+      "request": "launch",
+      "name": "🌐 Edge Preview",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/packages/frontend/src",
+      "preLaunchTask": "vite-dev",
+      "sourceMapPathOverrides": {
+        "/__vite/*": "${workspaceFolder}/packages/frontend/*"
+      }
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "🌐 Chrome Preview",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/packages/frontend/src",
+      "preLaunchTask": "vite-dev",
+      "sourceMapPathOverrides": {
+        "/__vite/*": "${workspaceFolder}/packages/frontend/*"
+      }
+    },
+
+    // ──────────── Attach ────────────
+    {
+      "type": "chrome",
+      "request": "attach",
+      "name": "🌐 Attach Tauri WebView",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}/packages/frontend/src",
+      "sourceMapPathOverrides": {
+        "/__vite/*": "${workspaceFolder}/packages/frontend/*"
+      }
+    }
+  ]
+}
