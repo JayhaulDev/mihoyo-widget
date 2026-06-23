@@ -22,13 +22,16 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            suffix: ""
+            artifact: mihoyo-widget-x86_64-linux
+            ext: ""
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            suffix: ".exe"
+            artifact: mihoyo-widget-x86_64-windows
+            ext: ".exe"
           - os: macos-latest
             target: x86_64-apple-darwin
-            suffix: ""
+            artifact: mihoyo-widget-x86_64-macos
+            ext: ""
 
     runs-on: ${{ matrix.os }}
 
@@ -49,8 +52,7 @@ jobs:
             libappindicator3-dev \
             librsvg2-dev \
             patchelf \
-            libssl-dev \
-            libayatana-appindicator3-dev
+            libssl-dev
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -63,38 +65,18 @@ jobs:
           npm install
           npm run build
 
-      - name: Build Tauri app (${{ matrix.os }})
-        uses: tauri-apps/tauri-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2.0" --locked
+
+      - name: Build Tauri app
+        working-directory: apps/desktop
+        run: cargo tauri build --verbose
+
+      - name: Upload artifact (${{ matrix.os }})
+        uses: actions/upload-artifact@v4
         with:
-          projectPath: apps/desktop
-          tagName: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
-          releaseName: "Mihoyo Widget ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}"
-          releaseBody: |
-            ## Mihoyo Widget — HSR Desktop Companion
-
-            ### What's new
-
-            - Real-time stamina ring with percentage indicator
-            - Battle challenges: Forgotten Hall, Pure Fiction, Apocalyptic Shadow, Challenge Peak
-            - Banner & event tracker with countdown and progress bars
-            - Monthly stellar jade ledger
-            - Simulated Universe archives (Nous / Magic / Locust)
-            - Dark/Light theme toggle
-            - System tray icon with right-click menu
-            - Desktop notifications for stamina & expeditions
-
-            ### Install
-
-            Download the package for your platform below.
-
-            ### Notes
-
-            - **First launch:** Enter your Cookie/SToken/UID via right-click → Settings
-            - Data refreshes automatically every 90 seconds
-            - Config saved to `~/.config/mihoyo-widget/runtime.json`
-          releaseDraft: ${{ github.event_name != 'push' }}
-          releasePrerelease: false
+          name: ${{ matrix.artifact }}
+          path: |
+            apps/desktop/target/release/mihoyo-widget${{ matrix.ext }}
+            apps/desktop/target/release/bundle/
+          if-no-files-found: warn
