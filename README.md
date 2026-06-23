@@ -44,7 +44,7 @@ No manual setup required for device identification.
 There are two ways to configure the app:
 
 1. **Via the GUI** — Right-click anywhere or click the gear icon ⚙, fill in the form, and save.
-2. **Via config file** — Place a `Mihoyo-env.json` in your `下载` directory or `~/.config/mihoyo-widget/env.json`:
+2. **Via config file** — Place a `Mihoyo-env.json` in your **Downloads** directory or `~/.config/mihoyo-widget/env.json` (macOS/Linux) or `%APPDATA%/mihoyo-widget/env.json` (Windows):
 
 ```json
 {
@@ -56,7 +56,21 @@ There are two ways to configure the app:
 }
 ```
 
-Runtime edits are saved to `~/.config/mihoyo-widget/runtime.json`.
+Runtime edits are saved to the OS-appropriate config directory:
+- **Linux**: `~/.config/mihoyo-widget/runtime.json`
+- **macOS**: `~/Library/Application Support/mihoyo-widget/runtime.json`
+- **Windows**: `%APPDATA%/mihoyo-widget/runtime.json`
+
+You can also set all values via environment variables: `MIHOYO_COOKIE`, `MIHOYO_STOKEN`, `MIHOYO_UID`, etc.
+
+## Platform Support
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| Linux (x86_64) | ✅ | Tested, full support |
+| Windows (x86_64) | ✅ | CI-verified |
+| macOS (Apple Silicon) | ✅ | CI-verified, native ARM build |
+| macOS (Intel) | ⚠️ | Build on request via `cargo tauri build` |
 
 ## Tech Stack
 
