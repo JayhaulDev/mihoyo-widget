@@ -1,7 +1,7 @@
 use game_hsr::api::client::HsrApiClient;
 use game_hsr::api::{WidgetData, PlayerInfo, RogueArchive};
 use game_hsr::api::cache::{AllCachedData, HsrCache};
-use game_hsr::notify::rules::check_rules;
+use game_hsr::notify::{check_rules, check_digest};
 use mihoyo_core::cache::CacheDb;
 use mihoyo_core::config::Settings;
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -100,7 +100,10 @@ async fn force_refresh(state: State<'_, AppState>, app: AppHandle) -> Result<Str
         drop(cache);
 
         if let Some(ref old_data) = old {
-            check_rules(&widget_data, Some(old_data), &app);
+            let state = app.state::<AppState>();
+            let config = state.config_data.lock().await.notification.clone();
+            drop(state);
+            check_rules(&widget_data, Some(old_data), &app, &config);
         }
     }
 
@@ -134,6 +137,33 @@ async fn save_config(
     Ok("ok".into())
 }
 
+fn rebuild_tray_menu(app: &tauri::AppHandle, notif_mode: bool) {
+    let menu = {
+        let m = tauri::menu::MenuBuilder::new(app)
+            .item(&tauri::menu::MenuItemBuilder::with_id("show", "显示/隐藏窗口")
+                .accelerator("CmdOrCtrl+Shift+H").build(app).unwrap())
+            .item(&tauri::menu::MenuItemBuilder::with_id("refresh", "刷新数据")
+                .build(app).unwrap())
+            .separator();
+        let m = if notif_mode {
+            m.item(&tauri::menu::MenuItemBuilder::with_id("toggle-notification-mode", "✓ 切换到窗口模式")
+                .build(app).unwrap())
+        } else {
+            m.item(&tauri::menu::MenuItemBuilder::with_id("toggle-notification-mode", "切换到通知模式")
+                .build(app).unwrap())
+        };
+        let m = m.separator();
+        let m = m.item(&tauri::menu::MenuItemBuilder::with_id("quit", "退出")
+                .accelerator("CmdOrCtrl+Q").build(app).unwrap());
+        m.build().unwrap()
+    };
+
+    // Update tray menu
+    if let Some(tray) = app.tray_by_id("main") {
+        let _ = tray.set_menu(Some(menu));
+    }
+}
+
 fn handle_tray_menu(app: &tauri::AppHandle, event: tauri::menu::MenuEvent) {
     let id = event.id();
     let window = app.get_webview_window("main");
@@ -152,6 +182,46 @@ fn handle_tray_menu(app: &tauri::AppHandle, event: tauri::menu::MenuEvent) {
             if let Some(w) = window {
                 let _ = w.emit("manual-refresh", ());
             }
+        }
+        "toggle-notification-mode" => {
+            let state = app.state::<AppState>();
+            let mut settings = state.config_data.blocking_lock();
+            let new_mode = !settings.notification.notification_mode;
+            settings.notification.notification_mode = new_mode;
+            let _ = settings.save_to_runtime();
+            drop(settings);
+            drop(state);
+
+            let window = app.get_webview_window("main");
+            if new_mode {
+                if let Some(w) = window {
+                    let _ = w.hide();
+                }
+            } else {
+                if let Some(w) = window {
+                    let _ = w.show();
+                    let _ = w.set_focus();
+                }
+                let state = app.state::<AppState>();
+                let cache = state.cache_data.blocking_lock();
+                let all = cache.get_all_cached();
+                drop(cache);
+                drop(state);
+                let _ = app.emit("data-updated", serde_json::json!({
+                    "widget": all.widget,
+                    "player": all.player,
+                    "ledger": all.ledger,
+                    "banners": all.banners,
+                    "forgotten_hall": all.forgotten_hall,
+                    "pure_fiction": all.pure_fiction,
+                    "apocalyptic_shadow": all.apocalyptic_shadow,
+                    "periodic_act": all.periodic_act,
+                    "challenge_peak": all.challenge_peak,
+                    "rogue_archive": all.rogue_archive,
+                }));
+            }
+
+            rebuild_tray_menu(app, new_mode);
         }
         "quit" => {
             app.exit(0);
@@ -215,7 +285,7 @@ pub fn run() {
                 // Embed icon at compile time — works on all platforms
                 let icon_bytes = include_bytes!("../icons/icon.png");
                 let icon = tauri::image::Image::from_bytes(icon_bytes).ok();
-                let mut builder = tauri::tray::TrayIconBuilder::new()
+                let mut builder = tauri::tray::TrayIconBuilder::with_id("main")
                     .tooltip("Mihoyo Widget")
                     .show_menu_on_left_click(false)
                     .on_menu_event(handle_tray_menu);
@@ -227,6 +297,24 @@ pub fn run() {
                     builder = builder.icon_as_template(true);
                 }
                 let _ = builder.menu(&menu).build(app);
+            }
+
+            // Get notification_mode and rebuild tray menu accordingly
+            let notif_mode = {
+                let state = app.state::<AppState>();
+                let guard = state.config_data.blocking_lock();
+                let m = guard.notification.notification_mode;
+                drop(guard);
+                m
+            };
+
+            rebuild_tray_menu(app.handle(), notif_mode);
+
+            // Hide window on startup if notification mode is active
+            if notif_mode {
+                if let Some(w) = app.get_webview_window("main") {
+                    let _ = w.hide();
+                }
             }
 
             if cfg!(debug_assertions) {
@@ -306,7 +394,17 @@ async fn run_poller(app: AppHandle) {
                     drop(cache);
 
                     if let Some(ref old_data) = old {
-                        check_rules(&data, Some(old_data), &app);
+                        let state = app.state::<AppState>();
+                        let config = state.config_data.lock().await.notification.clone();
+                        drop(state);
+                        check_rules(&data, Some(old_data), &app, &config);
+                    }
+
+                    {
+                        let state = app.state::<AppState>();
+                        let config = state.config_data.lock().await.notification.clone();
+                        drop(state);
+                        check_digest(&data, &app, &config);
                     }
                 }
 
