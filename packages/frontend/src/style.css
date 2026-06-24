@@ -951,6 +951,343 @@ input[type='time']::-webkit-calendar-picker-indicator {
 }
 
 /* ═══════════════════════════════════════
+   SETTINGS DRILL-DOWN NAVIGATION
+   ═══════════════════════════════════════ */
+
+/* -- Settings Nav Bar -- */
+#settings-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+#settings-back {
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 56px;
+}
+#settings-back:hover {
+  background: var(--bg-elevated);
+}
+#settings-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+#settings-done {
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  min-width: 56px;
+  text-align: right;
+}
+#settings-done:hover {
+  background: var(--bg-elevated);
+}
+#settings-back.hidden,
+#settings-done.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* -- Settings Pages Container -- */
+#settings-pages {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* -- Individual Page -- */
+.settings-page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 4px 8px;
+  opacity: 0;
+  transform: translateX(30px);
+  transition:
+    transform 0.3s ease,
+    opacity 0.25s ease;
+  will-change: transform, opacity;
+  pointer-events: none;
+  -webkit-overflow-scrolling: touch;
+}
+.settings-page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.settings-page.exit-left {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+.settings-page.enter-right {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* -- Settings Group (iOS-style grouped list) -- */
+.settings-group {
+  background: var(--bg-elevated);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.settings-group:last-child {
+  margin-bottom: 0;
+}
+.settings-group-header {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 500;
+  padding: 8px 12px 4px;
+  letter-spacing: -0.1px;
+  text-transform: uppercase;
+}
+
+/* -- Menu Row (root page) -- */
+.settings-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+  min-height: 40px;
+  border-bottom: 0.5px solid var(--gray-light);
+}
+.settings-menu-row:last-child {
+  border-bottom: none;
+}
+.settings-menu-row:hover {
+  background: var(--bg-secondary);
+}
+.settings-menu-row:active {
+  background: var(--gray-light);
+}
+.settings-menu-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.settings-menu-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--blue);
+  stroke-width: 2;
+}
+.settings-menu-label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.settings-menu-title {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+.settings-menu-summary {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.settings-menu-chevron {
+  font-size: 14px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* -- Subpage Content -- */
+.setting-field-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  min-height: 36px;
+  border-bottom: 0.5px solid var(--gray-light);
+}
+.setting-field-row:last-child {
+  border-bottom: none;
+}
+.setting-field-label {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  flex-shrink: 0;
+  min-width: 64px;
+}
+.setting-field-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  text-align: right;
+  font-family: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace;
+}
+.setting-field-input::placeholder {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.setting-field-input:focus {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+/* -- Password field with reveal -- */
+.setting-password-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.setting-password-wrap input {
+  flex: 1;
+  text-align: right;
+}
+.setting-password-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: background 0.12s;
+}
+.setting-password-toggle:hover {
+  background: var(--bg-secondary);
+}
+.setting-password-toggle svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* -- Action row (e.g. login button) -- */
+.setting-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 500;
+  gap: 6px;
+}
+.setting-action-row:hover {
+  background: var(--bg-secondary);
+}
+.setting-action-row:active {
+  background: var(--gray-light);
+}
+.setting-action-row svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--blue);
+  stroke-width: 2;
+}
+
+/* -- Subpage footer hint -- */
+.setting-page-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 12px 8px;
+}
+
+/* -- Storage subpage specific -- */
+.setting-storage-path {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace;
+  padding: 4px 12px 8px;
+  word-break: break-all;
+  line-height: 1.4;
+}
+.setting-storage-btn {
+  display: block;
+  width: calc(100% - 24px);
+  margin: 8px 12px 12px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border: 0.5px solid var(--blue);
+  border-radius: 10px;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.setting-storage-btn:hover {
+  background: var(--blue);
+  color: white;
+}
+
+/* -- Notification subpage (keeps existing .notif-group etc.) -- */
+#settings-notifications .settings-scroll {
+  padding: 0 4px;
+}
+#settings-notifications .notif-group {
+  background: var(--bg-elevated);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* -- General subpage -- */
+.setting-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 0.5px solid var(--gray-light);
+}
+.setting-info-row:last-child {
+  border-bottom: none;
+}
+.setting-info-label {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+.setting-info-value {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace;
+}
+
+/* ═══════════════════════════════════════
    TAB BAR (iOS style)
    ═══════════════════════════════════════ */
 #tab-bar {
