@@ -100,7 +100,7 @@ function saveCurrentSettings() {
     seed_time: config?.seed_time || '',
     region: config?.region || 'prod_gf_cn',
     poll_interval_secs: config?.poll_interval_secs || 90,
-    data_dir: config?.data_dir || '',
+    data_dir: $('input-data-dir')?.value.trim() || config?.data_dir || '',
   };
   // Collect notification settings
   const notif = {};
