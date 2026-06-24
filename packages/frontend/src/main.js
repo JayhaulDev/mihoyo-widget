@@ -98,33 +98,56 @@ function renderDashboard() {
     $('reserve-row').classList.add('hidden');
   }
 
-  // Sign
-  const sv = $('sign-value');
-  sv.textContent = d.has_signed ? '已签到' : '未签到';
-  sv.className = `item-value ${d.has_signed ? 'ok' : 'warn'}`;
+  function setCell(id, value, dotClass, sub) {
+    const el = $(id);
+    if (!el) return;
+    el.className = 'ov-grid-value';
+    el.innerHTML = `${value}${dotClass ? `<span class="ov-grid-dot ${dotClass}"></span>` : ''}`;
+    const subEl = el.parentElement?.querySelector('.ov-grid-sub');
+    if (subEl) subEl.textContent = sub || '';
+  }
 
-  // Expedition
+  // Sign
+  setCell('sign-value', d.has_signed ? '已签到' : '未签到', d.has_signed ? 'ok' : 'warn', '');
+
+  // Expedition: accepted = 进行中, 0 = 全部可领
   if (d.total_expedition_num > 0) {
-    $('expedition-value').textContent = `${d.accepted_expedition_num}/${d.total_expedition_num}`;
-    $('expedition-value').className = `item-value ${d.accepted_expedition_num === 0 ? 'ok' : ''}`;
+    const done = d.accepted_expedition_num === 0;
+    const val = done
+      ? `${d.total_expedition_num}/${d.total_expedition_num}`
+      : `${d.accepted_expedition_num}/${d.total_expedition_num}`;
+    setCell('expedition-value', val, done ? 'ok' : 'muted', done ? '可领取' : '进行中');
   }
 
   // Rogue (周期演算)
   if (d.rogue_tourn_weekly_max > 0) {
-    $('rogue-value').textContent = `${d.rogue_tourn_weekly_cur}/${d.rogue_tourn_weekly_max}`;
-    $('rogue-value').className = `item-value ${d.rogue_tourn_weekly_cur === 0 ? 'warn' : 'ok'}`;
+    const full = d.rogue_tourn_weekly_cur >= d.rogue_tourn_weekly_max;
+    const val = `${d.rogue_tourn_weekly_cur}/${d.rogue_tourn_weekly_max}`;
+    setCell(
+      'rogue-value',
+      val,
+      full ? 'done' : d.rogue_tourn_weekly_cur === 0 ? 'warn' : '',
+      full ? '已满' : '',
+    );
   }
 
   // Cocoon (历战余响)
   if (d.weekly_cocoon_limit > 0) {
-    $('cocoon-value').textContent = `${d.weekly_cocoon_cnt}/${d.weekly_cocoon_limit}`;
-    $('cocoon-value').className = `item-value ${d.weekly_cocoon_cnt > 0 ? '' : 'ok'}`;
+    const done = d.weekly_cocoon_cnt >= d.weekly_cocoon_limit;
+    const val = `${d.weekly_cocoon_cnt}/${d.weekly_cocoon_limit}`;
+    setCell('cocoon-value', val, done ? 'done' : 'muted', done ? '已打完' : '剩余');
   }
 
   // Daily training
   if (d.max_train_score > 0) {
-    $('train-value').textContent = `${d.current_train_score}/${d.max_train_score}`;
-    $('train-value').className = `item-value ${d.current_train_score > 0 ? '' : 'warn'}`;
+    const full = d.current_train_score >= d.max_train_score;
+    const val = `${d.current_train_score}/${d.max_train_score}`;
+    setCell(
+      'train-value',
+      val,
+      full ? 'done' : d.current_train_score === 0 ? 'warn' : '',
+      full ? '已满' : '',
+    );
   }
 
   // Player info
@@ -139,28 +162,33 @@ function renderDashboard() {
 
   // Season info row
   renderSeasonRow();
+
+  // 模拟宇宙档案
+  renderRogueArchive();
 }
 
 function renderSeasonRow() {
-  const el = $('season-info');
-  if (!el) return;
+  const section = $('season-section');
+  if (!section) return;
   if (!periodicAct?.acts?.length) {
-    el.textContent = '';
-    el.classList.add('hidden');
+    section.innerHTML = '';
+    section.classList.add('hidden');
     return;
   }
-  el.classList.remove('hidden');
-  const parts = periodicAct.acts
+  section.classList.remove('hidden');
+  section.innerHTML = periodicAct.acts
+    .filter((a) => a.season_name)
     .map((a) => {
       const name = a.season_name || '';
-      const lvl = a.season_level || '';
+      let detail = '';
       if (a.division_level && a.division_level !== '0') {
-        return `${name || '财富造物主'} · 段位${a.division_level}`;
+        detail = `段位${a.division_level}`;
+      } else if (a.season_level) {
+        detail = `Lv.${a.season_level}`;
       }
-      return name ? `${name} · Lv.${lvl}` : '';
+      return `<div class="ov-season-item"><span class="ov-season-name">${name}</span>${detail ? `<span class="ov-season-detail">${detail}</span>` : ''}</div>`;
     })
-    .filter(Boolean);
-  el.textContent = parts.join('  │  ');
+    .join('');
 }
 
 // ═══════════════════════════════════════
@@ -192,17 +220,18 @@ function renderChallengeTab() {
 }
 
 function renderChallengeCard(prefix, data, isPeak) {
-  const card = document.querySelector(`#${prefix}-stat`)?.closest('.battle-card');
+  const card = document.getElementById(`btl-${prefix}`);
   if (!card) return;
   const statEl = $(`${prefix}-stat`);
-  const dateEl = card.querySelector('.battle-card-date');
-  const progressEl = card.querySelector('.battle-card-progress');
+  const dateEl = card.querySelector('.btl-card-date');
+  const barEl = card.querySelector('.btl-card-bar');
+  const fillEl = card.querySelector('.btl-card-fill');
 
   if (!data || !data.has_data) {
     statEl.textContent = isPeak ? '未开放' : '暂无数据';
     statEl.style.color = 'var(--text-muted)';
     if (dateEl) dateEl.textContent = '';
-    if (progressEl) progressEl.style.display = 'none';
+    if (barEl) barEl.style.display = 'none';
     return;
   }
 
@@ -215,7 +244,7 @@ function renderChallengeCard(prefix, data, isPeak) {
 
   // Stars for non-peak
   if (!isPeak) {
-    const starEl = card.querySelector('.battle-card-stars');
+    const starEl = card.querySelector('.btl-card-stars');
     if (starEl) {
       const filled = starFilled.repeat(Math.min(data.star_num, data.max_star));
       const empty = starEmpty.repeat(Math.max(0, data.max_star - data.star_num));
@@ -233,28 +262,28 @@ function renderChallengeCard(prefix, data, isPeak) {
   }
 
   // Progress bar for peak mode
-  if (isPeak && progressEl) {
-    progressEl.style.display = 'flex';
-    const fill = progressEl.querySelector('.challenge-bar-fill');
+  if (isPeak && barEl) {
+    barEl.style.display = 'block';
     const pct = max > 0 ? cur / max : 0;
-    fill.style.width = `${Math.min(pct * 100, 100)}%`;
-    fill.className = 'challenge-bar-fill' + (cur >= max ? ' done' : pct > 0.5 ? ' half' : '');
-  } else if (progressEl) {
-    progressEl.style.display = 'none';
+    fillEl.style.width = `${Math.min(pct * 100, 100)}%`;
+    fillEl.className = 'btl-card-fill' + (cur >= max ? ' done' : pct > 0.5 ? ' half' : '');
+  } else if (barEl) {
+    barEl.style.display = 'none';
   }
 }
 
 function renderProgressBar(id, cur, max, label) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const labelEl = el.parentElement?.querySelector('.weekly-label');
+  const fill = document.getElementById(id);
+  if (!fill) return;
+  const card = fill.closest('.btl-weekly');
+  if (!card) return;
+  const labelEl = card.querySelector('.btl-weekly-label');
   if (labelEl) labelEl.textContent = label;
-  const valEl = el.parentElement?.querySelector('.weekly-value');
+  const valEl = card.querySelector('.btl-weekly-value');
   if (valEl) valEl.textContent = `${cur}/${max}`;
-  const fill = el.querySelector('.weekly-bar-fill');
   const pct = max > 0 ? cur / max : 0;
   fill.style.width = `${Math.min(pct * 100, 100)}%`;
-  fill.className = 'weekly-bar-fill' + (cur >= max ? ' done' : pct > 0 ? '' : ' empty');
+  fill.className = 'btl-weekly-fill' + (cur >= max ? ' done' : pct > 0 ? '' : ' empty');
 }
 
 // ═══════════════════════════════════════
@@ -281,8 +310,8 @@ function renderMoreTab() {
 function makeBannerCard(act) {
   const card = document.createElement('div');
   card.className = 'banner-card';
-  if (act.act_type === '双倍' || act.act_type === '签到') card.classList.add('banner-card-event');
 
+  // Primary row: tag + name + days
   const top = document.createElement('div');
   top.className = 'banner-card-top';
 
@@ -296,32 +325,9 @@ function makeBannerCard(act) {
   name.className = 'banner-name';
   name.textContent = act.name;
 
-  top.appendChild(tag);
-  top.appendChild(name);
-
-  // Status badge
-  if (act.act_status) {
-    const status = document.createElement('span');
-    status.className = 'banner-status';
-    if (act.act_status === '未开始') status.classList.add('pending');
-    else if (act.act_status === '已完成') status.classList.add('done');
-    else status.classList.add('active');
-    status.textContent = act.act_status;
-    top.appendChild(status);
-  }
-
-  card.appendChild(top);
-
-  // Time row
-  const timeRow = document.createElement('div');
-  timeRow.className = 'banner-info-row';
-
-  const dateRange = document.createElement('span');
-  dateRange.className = 'banner-info-text';
-  dateRange.textContent = act.date_range || '';
-
+  // Days pill
   const days = document.createElement('span');
-  days.className = 'banner-days';
+  days.className = 'banner-days-pill';
   let dl = act.days_left;
   if (dl == null && act.end_time) {
     try {
@@ -330,79 +336,55 @@ function makeBannerCard(act) {
   }
   if (dl > 3) {
     days.textContent = `剩${dl}天`;
-    days.className = 'banner-days ok';
+    days.className = 'banner-days-pill ok';
   } else if (dl > 0) {
     days.textContent = `剩${dl}天`;
-    days.className = 'banner-days warn';
+    days.className = 'banner-days-pill warn';
   } else if (dl === 0) {
     days.textContent = '最后一天';
-    days.className = 'banner-days urgent';
+    days.className = 'banner-days-pill urgent';
   } else {
     days.textContent = '已结束';
-    days.className = 'banner-days over';
+    days.className = 'banner-days-pill over';
   }
 
-  timeRow.appendChild(dateRange);
-  timeRow.appendChild(days);
-  card.appendChild(timeRow);
+  top.appendChild(tag);
+  top.appendChild(name);
+  top.appendChild(days);
+  card.appendChild(top);
 
-  // Progress row (双倍活动)
+  // Thin progress bar at bottom
+  const progBar = document.createElement('div');
+  progBar.className = 'banner-progress';
+  const fill = document.createElement('div');
+  fill.className = 'banner-progress-fill';
+
   if (act.total_progress > 0) {
-    const progRow = document.createElement('div');
-    progRow.className = 'banner-info-row';
-    const progLabel = document.createElement('span');
-    progLabel.className = 'banner-info-text';
-    progLabel.textContent = `剩余次数`;
-    const progVal = document.createElement('span');
-    progVal.className = 'banner-days ok';
-    progVal.textContent = `${act.current_progress}/${act.total_progress}`;
-    progRow.appendChild(progLabel);
-    progRow.appendChild(progVal);
-    card.appendChild(progRow);
-
-    // Progress bar
-    const progBar = document.createElement('div');
-    progBar.className = 'banner-progress';
-    const fill = document.createElement('div');
-    fill.className = 'banner-progress-fill plenty';
+    // 双倍活动 — 按进度
     fill.style.width = `${(act.current_progress / act.total_progress) * 100}%`;
-    progBar.appendChild(fill);
-    card.appendChild(progBar);
+    fill.className = 'banner-progress-fill plenty';
+  } else if (
+    act.end_time &&
+    act.begin_time &&
+    act.end_time.length >= 10 &&
+    act.begin_time.length >= 10
+  ) {
+    try {
+      const total = new Date(act.end_time).getTime() - new Date(act.begin_time).getTime();
+      const elapsed = Date.now() - new Date(act.begin_time).getTime();
+      if (total > 0) {
+        const pct = Math.min(Math.max(elapsed / total, 0), 1);
+        fill.style.width = `${(1 - pct) * 100}%`;
+        if (dl > 3) fill.className = 'banner-progress-fill plenty';
+        else if (dl > 0) fill.className = 'banner-progress-fill warn';
+        else fill.className = 'banner-progress-fill urgent';
+      }
+    } catch {}
   } else {
-    // Time progress bar
-    const progBar = document.createElement('div');
-    progBar.className = 'banner-progress';
-    const fill = document.createElement('div');
-    fill.className = 'banner-progress-fill';
-    let pct = 0;
-    if (
-      act.end_time &&
-      act.begin_time &&
-      act.end_time.length >= 10 &&
-      act.begin_time.length >= 10
-    ) {
-      try {
-        const total = new Date(act.end_time).getTime() - new Date(act.begin_time).getTime();
-        const elapsed = Date.now() - new Date(act.begin_time).getTime();
-        if (total > 0) pct = Math.min(Math.max(elapsed / total, 0), 1);
-      } catch {}
-    }
-    fill.style.width = `${(1 - pct) * 100}%`;
-    if (dl > 3) fill.className = 'banner-progress-fill plenty';
-    else if (dl > 0) fill.className = 'banner-progress-fill warn';
-    else if (dl === 0) fill.className = 'banner-progress-fill urgent';
-    else fill.className = 'banner-progress-fill over';
-    progBar.appendChild(fill);
-    card.appendChild(progBar);
+    progBar.style.display = 'none';
   }
-
-  // Description
-  if (act.panel_desc) {
-    const desc = document.createElement('div');
-    desc.className = 'banner-desc';
-    desc.textContent = act.panel_desc;
-    card.appendChild(desc);
-  }
+  progBar.appendChild(fill);
+  card.appendChild(progBar);
 
   return card;
 }
@@ -425,14 +407,14 @@ function renderBanners() {
 
   if (pools.length) {
     const h = document.createElement('div');
-    h.className = 'tab-section-title';
+    h.className = 'banner-list-label';
     h.textContent = '角色 / 光锥';
     list.appendChild(h);
     for (const act of pools) list.appendChild(makeBannerCard(act));
   }
   if (events.length) {
     const h = document.createElement('div');
-    h.className = 'tab-section-title';
+    h.className = 'banner-list-label';
     h.textContent = '限时活动';
     list.appendChild(h);
     for (const act of events) list.appendChild(makeBannerCard(act));
@@ -440,41 +422,45 @@ function renderBanners() {
 }
 
 function renderRogueArchive() {
-  const el = $('archive-content');
+  const el = $('ov-archive-content');
+  const section = $('ov-archive-section');
   if (!el) return;
   const arch = rogueArchive;
   if (!arch || (!arch.nous_progress && !arch.magic_linear && !arch.locust_narrow)) {
     el.innerHTML = '<div class="archive-empty">暂无数据</div>';
-    $('archive-section')?.classList.add('empty');
+    section?.classList.add('empty');
     return;
   }
-  $('archive-section')?.classList.remove('empty');
+  section?.classList.remove('empty');
 
   let html = '';
   if (arch.nous_progress) {
-    html += `<div class="archive-item">
-      <span class="archive-name">智识令使</span>
-      <span class="archive-stat">${arch.nous_progress}</span>
-      <span class="archive-sub">奇迹 ${arch.nous_miracle} · 神经 ${arch.nous_nerve}</span>
+    html += `<div class="arc-cell">
+      <svg class="arc-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span class="arc-name">智识令使</span>
+      <span class="arc-progress">${arch.nous_progress}</span>
+      <span class="arc-sub">奇迹 ${arch.nous_miracle || '--'} · 神经 ${arch.nous_nerve || '--'}</span>
     </div>`;
   }
   if (arch.magic_linear) {
-    html += `<div class="archive-item">
-      <span class="archive-name">黄金与机械</span>
-      <span class="archive-stat">线形树 ${arch.magic_linear}</span>
-      <span class="archive-sub">秘闻 ${arch.magic_compendium} · 隐藏 ${arch.magic_secrets}</span>
+    html += `<div class="arc-cell">
+      <svg class="arc-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <span class="arc-name">黄金与机械</span>
+      <span class="arc-progress">${arch.magic_linear}</span>
+      <span class="arc-sub">秘闻 ${arch.magic_compendium || '--'} · 隐藏 ${arch.magic_secrets || '--'}</span>
     </div>`;
   }
   if (arch.locust_narrow > 0) {
-    html += `<div class="archive-item">
-      <span class="archive-name">寰宇蝗灾</span>
-      <span class="archive-stat">窄道 ${arch.locust_narrow}</span>
-      <span class="archive-sub">奇迹 ${arch.locust_miracle} · 事件 ${arch.locust_event}</span>
+    html += `<div class="arc-cell">
+      <svg class="arc-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span class="arc-name">寰宇蝗灾</span>
+      <span class="arc-progress">窄道 ${arch.locust_narrow}</span>
+      <span class="arc-sub">奇迹 ${arch.locust_miracle || '--'} · 事件 ${arch.locust_event || '--'}</span>
     </div>`;
     if (arch.locust_destinies?.length) {
-      html += '<div class="archive-destinies">';
+      html += '<div class="arc-destinies">';
       for (const d of arch.locust_destinies) {
-        html += `<span class="destiny-tag">${d.name} Lv.${d.level}</span>`;
+        html += `<span class="arc-destiny">${d.name} Lv.${d.level}</span>`;
       }
       html += '</div>';
     }
@@ -496,8 +482,8 @@ function drawRing(current, max) {
   ctx.clearRect(0, 0, w, h);
   const cx = w / 2,
     cy = h / 2,
-    r = 44,
-    lw = 5;
+    r = 32,
+    lw = 4;
 
   const g = ctx.createRadialGradient(cx, cy, r - 6, cx, cy, r + 12);
   g.addColorStop(0, 'rgba(10, 132, 255, 0.03)');
@@ -568,16 +554,38 @@ function formatTime(secs) {
 }
 
 let recoveryInterval = null;
+function formatEstTime(secs) {
+  if (secs <= 0) return '';
+  const now = new Date();
+  const ms = now.getTime() + secs * 1000;
+  const target = new Date(ms);
+  const h = target.getHours().toString().padStart(2, '0');
+  const m = target.getMinutes().toString().padStart(2, '0');
+  const today = new Date();
+  if (target.getDate() === today.getDate()) {
+    return `· ${h}:${m}`;
+  }
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (target.getDate() === tomorrow.getDate()) {
+    return `· 明天 ${h}:${m}`;
+  }
+  return `· ${target.getMonth() + 1}/${target.getDate()} ${h}:${m}`;
+}
 function startRecoveryTimer(secs) {
   if (recoveryInterval) clearInterval(recoveryInterval);
+  const est = $('recovery-est');
   if (secs <= 0) {
     $('recovery-time').textContent = '已满';
+    if (est) est.textContent = '';
     return;
   }
+  if (est) est.textContent = formatEstTime(secs);
   let r = secs;
   const tick = () => {
     if (r <= 0) {
       $('recovery-time').textContent = '已满';
+      if (est) est.textContent = '';
       clearInterval(recoveryInterval);
       recoveryInterval = null;
       return;
@@ -604,18 +612,29 @@ async function loadSettingsForm() {
   // 通知设置
   if (config) {
     const notif = config.notification || {};
-    document.querySelectorAll('.notif-toggle').forEach(el => {
+    document.querySelectorAll('.notif-toggle').forEach((el) => {
       const key = el.dataset.key;
       if (key in notif) {
         el.checked = notif[key];
       }
     });
-    document.querySelectorAll('.notif-input').forEach(el => {
+    document.querySelectorAll('.notif-input').forEach((el) => {
       const key = el.dataset.key;
       if (key in notif) {
-        el.value = key.startsWith('stamina_threshold')
-          ? Math.round(notif[key] * 100)
-          : notif[key];
+        if (key === 'rogue_reminder_time') {
+          // "Sun 20:00" → select + time
+          const parts = notif[key].split(' ');
+          const daySel = document.querySelector('.notif-input[data-key="rogue_reminder_day"]');
+          const timeInp = el;
+          if (parts.length === 2) {
+            if (daySel) daySel.value = parts[0];
+            timeInp.value = parts[1];
+          }
+        } else if (key.startsWith('stamina_threshold')) {
+          el.value = Math.round(notif[key] * 100);
+        } else {
+          el.value = notif[key];
+        }
       }
     });
     updateNotifDependencies();
@@ -623,7 +642,7 @@ async function loadSettingsForm() {
 }
 
 function updateNotifDependencies() {
-  document.querySelectorAll('[data-depends]').forEach(el => {
+  document.querySelectorAll('[data-depends]').forEach((el) => {
     const depKey = el.dataset.depends;
     const toggle = document.querySelector(`.notif-toggle[data-key="${depKey}"]`);
     el.style.display = toggle && toggle.checked ? '' : 'none';
@@ -809,7 +828,7 @@ const starFilled =
 const starEmpty =
   '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--gray-light)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
-document.querySelectorAll('.notif-toggle').forEach(el => {
+document.querySelectorAll('.notif-toggle').forEach((el) => {
   el.addEventListener('change', updateNotifDependencies);
 });
 
@@ -850,17 +869,24 @@ $('settings-save').addEventListener('click', async () => {
   };
   // 收集通知设置
   const notif = {};
-  document.querySelectorAll('.notif-toggle').forEach(el => {
+  document.querySelectorAll('.notif-toggle').forEach((el) => {
     notif[el.dataset.key] = el.checked;
   });
-  document.querySelectorAll('.notif-input').forEach(el => {
+  document.querySelectorAll('.notif-input').forEach((el) => {
     const key = el.dataset.key;
+    if (key === 'rogue_reminder_day') return; // merged into rogue_reminder_time
     let val = el.value;
     if (key.startsWith('stamina_threshold')) {
       val = parseInt(val) / 100 || 0;
     }
     notif[key] = val;
   });
+  // 合并星期选择器 + 时间选择器 → "EEE HH:MM"
+  const rogueDay = document.querySelector('.notif-input[data-key="rogue_reminder_day"]');
+  const rogueTime = document.querySelector('.notif-input[data-key="rogue_reminder_time"]');
+  if (rogueDay && rogueTime) {
+    notif.rogue_reminder_time = `${rogueDay.value} ${rogueTime.value}`;
+  }
   nc.notification = notif;
   // 保留从设置页面无法修改的字段
   if (config?.notification?.notification_mode != null) {
@@ -890,16 +916,312 @@ $('settings-close').addEventListener('click', () => {
 $('refresh-btn').addEventListener('click', doRefresh);
 $('theme-btn')?.addEventListener('click', toggleTheme);
 
-$('banner-toggle').addEventListener('click', () => {
-  $('banner-list').classList.toggle('hidden');
-  $('banner-icon').classList.toggle('open');
-});
+// 折叠功能已移除，banner/archive 始终保持展开
 
-$('archive-toggle')?.addEventListener('click', () => {
-  $('archive-content')?.classList.toggle('hidden');
-  $('archive-icon')?.classList.toggle('open');
-});
-
-// ── Init ──
+// ── Init (deferred — onboarding check runs after data load) ──
 applyTheme();
 loadData();
+
+// ═══════════════════════════════════════
+//    ONBOARDING WELCOME OVERLAY
+// ═══════════════════════════════════════
+
+const WELCOME_STEPS = [
+  {
+    title: '欢迎使用 Mihoyo Widget',
+    subtitle: '桌面实时监控星穹铁道游戏数据\n体力 / 派遣 / 挑战 / 活动，一目了然',
+    icon: '\u{1F3AE}',
+    render: () => `
+      <div class="welcome-icon">${WELCOME_STEPS[0].icon}</div>
+      <div class="welcome-title">${WELCOME_STEPS[0].title}</div>
+      <div class="welcome-subtitle">${WELCOME_STEPS[0].subtitle.replace(/\n/g, '<br>')}</div>
+    `,
+  },
+  {
+    title: '选择数据目录',
+    subtitle: '数据文件和缓存的存储位置。默认为系统配置目录。',
+    icon: '\u{1F4C1}',
+    render: () => `
+      <div class="welcome-icon">\u{1F4C1}</div>
+      <div class="welcome-title">选择数据目录</div>
+      <div class="welcome-subtitle">所有配置、缓存数据存储在此目录下。</div>
+      <div class="welcome-path" id="welcome-dir-path">${currentDataDir || '默认位置（~/.config/mihoyo-widget）'}</div>
+      <button class="welcome-dir-btn" id="welcome-pick-dir">选择其他目录</button>
+    `,
+  },
+  {
+    title: '登录米游社',
+    subtitle: '配置认证信息以获取游戏数据。推荐使用米游社登录自动获取。',
+    icon: '\u{1F510}',
+    render: () => {
+      const hasCookie = renderedConfig?.cookie && renderedConfig.cookie.length > 0;
+      return `
+        <div class="welcome-icon">\u{1F510}</div>
+        <div class="welcome-title">登录设置</div>
+        <div class="welcome-subtitle">${hasCookie ? '已配置 Cookie，可直接下一步。' : '选择登录方式：'}</div>
+        ${
+          hasCookie
+            ? ''
+            : `
+        <div class="welcome-login-form">
+          <button class="welcome-btn-primary" id="welcome-login-webview" style="width:100%">使用米游社登录</button>
+          <div class="welcome-subtitle" style="font-size:11px; margin:4px 0">或手动输入</div>
+          <input type="password" id="welcome-cookie-input" placeholder="Cookie（完整 Cookie 字符串）" />
+          <input type="password" id="welcome-stoken-input" placeholder="SToken（可选）" />
+          <input type="text" id="welcome-uid-input" placeholder="UID（可选）" />
+        </div>
+        `
+        }
+        ${hasCookie ? '<div class="welcome-login-status">✓ 已配置认证</div>' : ''}
+      `;
+    },
+  },
+  {
+    title: '功能介绍',
+    subtitle: '',
+    icon: '✨',
+    render: () => `
+      <div class="welcome-icon">✨</div>
+      <div class="welcome-title">功能介绍</div>
+      <div class="welcome-features">
+        <div class="welcome-feature-card">
+          <div class="welcome-feature-icon">⚡</div>
+          <div class="welcome-feature-name">实时数据</div>
+          <div class="welcome-feature-desc">体力、派遣、模拟宇宙等实时监控</div>
+        </div>
+        <div class="welcome-feature-card">
+          <div class="welcome-feature-icon">\u{1F3C6}</div>
+          <div class="welcome-feature-name">挑战追踪</div>
+          <div class="welcome-feature-desc">忘却之庭、虚构叙事、末日幻影</div>
+        </div>
+        <div class="welcome-feature-card">
+          <div class="welcome-feature-icon">\u{1F514}</div>
+          <div class="welcome-feature-name">通知提醒</div>
+          <div class="welcome-feature-desc">可配置阈值和定时提醒规则</div>
+        </div>
+        <div class="welcome-feature-card">
+          <div class="welcome-feature-icon">\u{1F5A5}️</div>
+          <div class="welcome-feature-name">托盘模式</div>
+          <div class="welcome-feature-desc">系统托盘常驻，静默通知不打扰</div>
+        </div>
+      </div>
+    `,
+  },
+  {
+    title: '准备就绪',
+    subtitle: '引导已完成，可以开始使用了！',
+    icon: '✅',
+    render: () => `
+      <div class="welcome-checkmark">✓</div>
+      <div class="welcome-title">准备就绪</div>
+      <div class="welcome-subtitle">引导已完成，可以开始使用 Mihoyo Widget 了！</div>
+      <div class="welcome-subtitle" style="font-size:11px; color:var(--text-muted)">
+        如需重新查看引导，可通过托盘菜单「欢迎引导」随时打开。
+      </div>
+    `,
+  },
+];
+
+let welcomeStep = 0;
+let isWelcoming = false;
+let renderedConfig = null;
+let currentDataDir = '';
+
+async function showWelcome() {
+  const overlay = $('welcome-overlay');
+  if (!overlay) return;
+  isWelcoming = true;
+  welcomeStep = 0;
+  overlay.classList.remove('hidden');
+  try {
+    currentDataDir = await invoke('get_data_dir');
+  } catch {}
+  try {
+    renderedConfig = await invoke('load_env_config');
+  } catch {}
+  renderWelcomeStep();
+}
+
+function hideWelcome() {
+  const overlay = $('welcome-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  isWelcoming = false;
+  if (renderedConfig && !renderedConfig.first_run_done) {
+    invoke('complete_first_run').catch(() => {});
+  }
+}
+
+function renderWelcomeStep() {
+  const step = WELCOME_STEPS[welcomeStep];
+  if (!step) return;
+
+  // Dots
+  const dots = document.querySelectorAll('.welcome-step-dot');
+  dots.forEach((d, i) => d.classList.toggle('active', i === welcomeStep));
+
+  // Content
+  const content = $('welcome-content');
+  content.innerHTML = step.render();
+
+  // Footer buttons
+  const isFirst = welcomeStep === 0;
+  const isLast = welcomeStep === WELCOME_STEPS.length - 1;
+  const skipBtn = $('welcome-skip');
+  const nextBtn = $('welcome-next');
+
+  skipBtn.textContent = isFirst ? '跳过引导' : isLast ? '' : '上一步';
+  skipBtn.style.display = isFirst || isLast ? 'block' : 'inline-block';
+  if (isLast) skipBtn.textContent = '';
+  skipBtn.style.visibility = isLast ? 'hidden' : 'visible';
+
+  nextBtn.textContent = isLast ? '开始使用' : '下一步';
+
+  // Wire step-specific events
+  wireWelcomeEvents();
+}
+
+function wireWelcomeEvents() {
+  // Dir picker (step 2)
+  const pickDirBtn = $('welcome-pick-dir');
+  if (pickDirBtn) {
+    pickDirBtn.addEventListener('click', async () => {
+      try {
+        const dir = await invoke('pick_data_dir');
+        if (dir) {
+          currentDataDir = dir;
+          const pathEl = $('welcome-dir-path');
+          if (pathEl) pathEl.textContent = dir;
+          await invoke('set_data_dir', { dataDir: dir });
+        }
+      } catch (e) {
+        console.warn('Directory pick failed:', e);
+      }
+    });
+  }
+
+  // Login webview (step 3)
+  const loginBtn = $('welcome-login-webview');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+      try {
+        await invoke('open_login_webview');
+      } catch (e) {
+        console.warn('Open login failed:', e);
+      }
+    });
+  }
+
+  // Cookie/UID inputs (step 3)
+  const cookeInp = $('welcome-cookie-input');
+  const stokenInp = $('welcome-stoken-input');
+  const uidInp = $('welcome-uid-input');
+  if (cookeInp || stokenInp || uidInp) {
+    const saveWelcomeCreds = () => {};
+    if (cookeInp) cookeInp.addEventListener('input', saveWelcomeCreds);
+    if (stokenInp) stokenInp.addEventListener('input', saveWelcomeCreds);
+    if (uidInp) uidInp.addEventListener('input', saveWelcomeCreds);
+  }
+}
+
+// ── Welcome navigation ──
+$('welcome-next')?.addEventListener('click', async () => {
+  if (welcomeStep === WELCOME_STEPS.length - 1) {
+    await completeWelcome();
+    return;
+  }
+
+  // Step-specific save before advancing
+  if (welcomeStep === 2) {
+    const cookie = $('welcome-cookie-input')?.value?.trim();
+    const stoken = $('welcome-stoken-input')?.value?.trim();
+    const uid = $('welcome-uid-input')?.value?.trim();
+    if (cookie) {
+      try {
+        const currentConfig = await invoke('load_env_config');
+        currentConfig.cookie = cookie;
+        currentConfig.stoken = stoken || currentConfig.stoken;
+        currentConfig.uid = uid || currentConfig.uid;
+        currentConfig.first_run_done = false;
+        await invoke('save_config', { newConfig: currentConfig });
+        renderedConfig = currentConfig;
+      } catch (e) {
+        console.warn('Failed to save creds from welcome:', e);
+      }
+    }
+  }
+
+  welcomeStep++;
+  renderWelcomeStep();
+});
+
+$('welcome-skip')?.addEventListener('click', async () => {
+  await completeWelcome();
+});
+
+async function completeWelcome() {
+  const cookie = $('welcome-cookie-input')?.value?.trim();
+  if (cookie && renderedConfig) {
+    renderedConfig.cookie = cookie;
+    renderedConfig.stoken = $('welcome-stoken-input')?.value?.trim() || renderedConfig.stoken;
+    renderedConfig.uid = $('welcome-uid-input')?.value?.trim() || renderedConfig.uid;
+    renderedConfig.data_dir = currentDataDir;
+    renderedConfig.first_run_done = true;
+    try {
+      await invoke('save_config', { newConfig: renderedConfig });
+    } catch (e) {
+      console.warn('Save on complete failed:', e);
+    }
+  } else {
+    try {
+      await invoke('set_data_dir', { dataDir: currentDataDir });
+      await invoke('complete_first_run');
+    } catch (e) {
+      console.warn('Complete first run save failed:', e);
+    }
+  }
+
+  hideWelcome();
+  loadData();
+}
+
+// ── Listen for tray "show-welcome" event ──
+listen('show-welcome', () => {
+  showWelcome();
+});
+
+// ── Listen for login cookie capture ──
+listen('login-cookies-captured', (event) => {
+  const data = event.payload;
+  if (data.cookie) {
+    const cookeInp = $('welcome-cookie-input');
+    if (cookeInp) cookeInp.value = data.cookie;
+    if (data.stoken) {
+      const stokenInp = $('welcome-stoken-input');
+      if (stokenInp) stokenInp.value = data.stoken;
+    }
+    if (data.uid) {
+      const uidInp = $('welcome-uid-input');
+      if (uidInp) uidInp.value = data.uid;
+    }
+    const mainCookie = $('input-cookie');
+    if (mainCookie) mainCookie.value = data.cookie;
+    const mainStoken = $('input-stoken');
+    if (mainStoken && data.stoken) mainStoken.value = data.stoken;
+    const mainUid = $('input-uid');
+    if (mainUid && data.uid) mainUid.value = data.uid;
+  }
+});
+
+// ── Check first run after startup ──
+const originalLoadData = loadData;
+loadData = async function () {
+  await originalLoadData();
+  try {
+    const status = await invoke('check_first_run');
+    if (status.needs_onboarding) {
+      setTimeout(() => showWelcome(), 300);
+    }
+  } catch (e) {
+    console.warn('First run check failed:', e);
+  }
+};

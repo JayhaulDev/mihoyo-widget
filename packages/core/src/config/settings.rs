@@ -18,6 +18,13 @@ pub struct Settings {
     pub poll_interval_secs: u64,
     #[serde(default)]
     pub notification: NotificationConfig,
+    /// Base directory for runtime config, cache, and other data files.
+    /// Empty string means use default (platform-specific config/cache dirs).
+    #[serde(default)]
+    pub data_dir: String,
+    /// Whether the first-run onboarding wizard has been completed.
+    #[serde(default)]
+    pub first_run_done: bool,
 }
 
 impl Default for Settings {
@@ -36,6 +43,8 @@ impl Default for Settings {
             region: String::from("prod_gf_cn"),
             poll_interval_secs: 90,
             notification: NotificationConfig::default(),
+            data_dir: String::new(),
+            first_run_done: false,
         }
     }
 }
@@ -95,9 +104,16 @@ fn env_path() -> PathBuf {
     PathBuf::from("Mihoyo-env.json")
 }
 
-/// Path to the writable runtime config (settings panel saves here)
-fn runtime_config_path() -> PathBuf {
-    if let Some(base) = dirs::config_dir() {
+/// Path to the writable runtime config (settings panel saves here).
+/// If data_dir is set, config lives inside that directory; otherwise
+/// the platform-default config directory is used.
+fn runtime_config_path(data_dir: &str) -> PathBuf {
+    let base = if data_dir.is_empty() {
+        dirs::config_dir()
+    } else {
+        Some(PathBuf::from(data_dir))
+    };
+    if let Some(base) = base {
         let p = base.join("mihoyo-widget").join("runtime.json");
         if let Some(parent) = p.parent() {
             std::fs::create_dir_all(parent).ok();
@@ -109,15 +125,44 @@ fn runtime_config_path() -> PathBuf {
 
 impl Settings {
     pub fn load() -> Option<Self> {
-        // Priority: runtime.json > Mihoyo-env.json > env vars
-        let rt_path = runtime_config_path();
-        if rt_path.exists() {
-            if let Ok(content) = fs::read_to_string(&rt_path) {
-                if let Ok(s) = serde_json::from_str::<Self>(&content) {
-                    log::info!("Loaded config from {:?}", rt_path);
-                    return Some(s);
+        // Priority: runtime.json (default path) > runtime.json (custom data_dir) >
+        //           Mihoyo-env.json > env vars
+        let (rt_path, loaded) = {
+            let path = runtime_config_path("");
+            if path.exists() {
+                if let Ok(content) = fs::read_to_string(&path) {
+                    if let Ok(s) = serde_json::from_str::<Self>(&content) {
+                        (Some(path), Some(s))
+                    } else {
+                        (Some(path), None)
+                    }
+                } else {
+                    (Some(path), None)
+                }
+            } else {
+                (None, None)
+            }
+        };
+
+        // If loaded settings specify a custom data_dir, try that path too
+        // (custom path wins over default path)
+        if let Some(ref s) = loaded {
+            if !s.data_dir.is_empty() {
+                let custom_path = runtime_config_path(&s.data_dir);
+                if custom_path.exists() {
+                    if let Ok(content) = fs::read_to_string(&custom_path) {
+                        if let Ok(custom) = serde_json::from_str::<Self>(&content) {
+                            log::info!("Loaded config from {:?} (custom data_dir)", custom_path);
+                            return Some(custom);
+                        }
+                    }
                 }
             }
+        }
+
+        if let Some(s) = loaded {
+            log::info!("Loaded config from {:?}", rt_path.unwrap());
+            return Some(s);
         }
 
         let path = env_path();
@@ -140,8 +185,11 @@ impl Settings {
 
     /// Save settings to runtime config file (overwrites)
     pub fn save_to_runtime(&self) -> Result<(), String> {
-        let path = runtime_config_path();
+        let path = runtime_config_path(&self.data_dir);
         let json = serde_json::to_string_pretty(self).map_err(|e| e.to_string())?;
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| format!("Failed to create config dir: {}", e))?;
+        }
         fs::write(&path, &json).map_err(|e| format!("Failed to write config: {}", e))?;
         log::info!("Saved config to {:?}", path);
         Ok(())
@@ -162,6 +210,8 @@ impl Settings {
             region: json.get("region").or_else(|| json.get("MIHOYO_REGION")).and_then(|v| v.as_str()).unwrap_or("prod_gf_cn").to_string(),
             poll_interval_secs: json.get("poll_interval_secs").or_else(|| json.get("POLL_INTERVAL")).and_then(|v| v.as_u64()).unwrap_or(90),
             notification: json.get("notification").map(|v| serde_json::from_value(v.clone()).unwrap_or_default()).unwrap_or_default(),
+            data_dir: json.get("data_dir").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+            first_run_done: json.get("first_run_done").and_then(|v| v.as_bool()).unwrap_or(true),
         }
     }
 
@@ -181,6 +231,8 @@ impl Settings {
             poll_interval_secs: std::env::var("POLL_INTERVAL").ok().and_then(|v| v.parse().ok()).unwrap_or(90),
             // notification 字段由 runtime.json 或默认值决定，环境变量不覆盖
             notification: NotificationConfig::default(),
+            data_dir: String::new(),
+            first_run_done: false,
         }
     }
 

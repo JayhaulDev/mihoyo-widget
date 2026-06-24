@@ -15,162 +15,190 @@
 
       <!-- ════════ TAB 1: 仪表盘 ════════ -->
       <div id="tab-overview" class="tab-content active">
-        <div class="widget-group stamina-group">
-          <canvas id="stamina-ring" width="110" height="110"></canvas>
-          <div id="stamina-text">
-            <span id="stamina-current">--</span>
-            <span id="stamina-sep">/</span>
-            <span id="stamina-max">--</span>
-          </div>
-          <div id="stamina-recovery">
-            <span id="recovery-label">回满</span>
-            <span id="recovery-time">--</span>
-          </div>
-          <div id="reserve-row" class="hidden">
-            <span id="reserve-label">后备</span>
-            <span id="reserve-value">--</span>
-          </div>
-        </div>
-
-        <div id="player-info">
-          <span id="player-name">未登录</span>
-          <span id="player-level">Lv.--</span>
-        </div>
-
-        <div class="widget-group">
-          <!-- 2×3 Status Grid -->
-          <div id="status-grid">
-            <div class="status-item">
-              <span class="item-label">每日签到</span>
-              <span class="item-value" id="sign-value">--</span>
+        <div class="more-section">
+          <div class="ov-stamina-card">
+            <div class="ov-stamina-left">
+              <div class="ov-ring-wrap">
+                <canvas id="stamina-ring" width="80" height="80"></canvas>
+                <div id="stamina-text" class="ov-ring-text-sm">
+                  <span id="stamina-current">--</span>
+                  <span id="stamina-sep">/</span>
+                  <span id="stamina-max">--</span>
+                </div>
+              </div>
             </div>
-            <div class="status-item">
-              <span class="item-label">派遣</span>
-              <span class="item-value" id="expedition-value">--</span>
-            </div>
-            <div class="status-item">
-              <span class="item-label">周期演算</span>
-              <span class="item-value" id="rogue-value">--</span>
-            </div>
-            <div class="status-item">
-              <span class="item-label">历战余响</span>
-              <span class="item-value" id="cocoon-value">--</span>
-            </div>
-            <div class="status-item">
-              <span class="item-label">每日实训</span>
-              <span class="item-value" id="train-value">--</span>
-            </div>
-            <div class="status-item">
-              <span class="item-label">成就</span>
-              <span class="item-value" id="achievement-value">--</span>
+            <div class="ov-stamina-right">
+              <div id="player-info" class="ov-sp">
+                <span id="player-name">未登录</span>
+                <span id="player-level">Lv.--</span>
+              </div>
+              <div id="stamina-recovery" class="ov-recovery">
+                <span id="recovery-label" class="ov-recovery-label">回满</span>
+                <span id="recovery-time" class="ov-recovery-value">--</span>
+                <span id="recovery-est" class="ov-recovery-est"></span>
+              </div>
+              <div id="reserve-row" class="ov-reserve hidden">
+                <span class="ov-reserve-label">后备体力</span>
+                <span id="reserve-value" class="ov-reserve-value">--</span>
+              </div>
+              <div id="season-section" class="ov-season-section hidden"></div>
             </div>
           </div>
         </div>
 
-        <!-- Season info bar -->
-        <div id="season-info" class="season-bar hidden"></div>
+        <div class="more-section">
+          <div class="more-section-header">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            状态总览
+          </div>
+          <div class="more-group-card">
+            <div class="ov-grid">
+              <div class="ov-grid-cell">
+                <span class="ov-grid-label">每日签到</span>
+                <span class="ov-grid-value" id="sign-value">--</span>
+                <span class="ov-grid-sub"></span>
+              </div>
+              <div class="ov-grid-cell">
+                <span class="ov-grid-label">派遣</span>
+                <span class="ov-grid-value" id="expedition-value">--</span>
+                <span class="ov-grid-sub"></span>
+              </div>
+              <div class="ov-grid-cell">
+                <span class="ov-grid-label">周期演算</span>
+                <span class="ov-grid-value" id="rogue-value">--</span>
+                <span class="ov-grid-sub"></span>
+              </div>
+              <div class="ov-grid-cell">
+                <span class="ov-grid-label">历战余响</span>
+                <span class="ov-grid-value" id="cocoon-value">--</span>
+                <span class="ov-grid-sub"></span>
+              </div>
+              <div class="ov-grid-cell">
+                <span class="ov-grid-label">每日实训</span>
+                <span class="ov-grid-value" id="train-value">--</span>
+                <span class="ov-grid-sub"></span>
+              </div>
+              <div class="ov-grid-cell">
+                <span class="ov-grid-label">成就</span>
+                <span class="ov-grid-value" id="achievement-value">--</span>
+                <span class="ov-grid-sub"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="more-section" id="ov-archive-section">
+          <div class="more-section-header">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            模拟宇宙档案
+          </div>
+          <div id="ov-archive-content" class="more-group-card"></div>
+        </div>
       </div>
 
       <!-- ════════ TAB 2: 挑战 ════════ -->
       <div id="tab-battle" class="tab-content">
-        <div class="tab-section-title">
-          <!-- Trophy icon -->
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-          挑战模式
+        <div class="more-section">
+          <div class="more-section-header">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            挑战模式
+          </div>
+          <div class="more-group-card">
+            <div class="btl-card" id="btl-forgotten-hall">
+              <div class="btl-card-row">
+                <div class="btl-card-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M20 12H4"/><path d="m15 4-3 3-3-3"/><path d="m9 20 3-3 3 3"/><path d="m4 15 3-3-3-3"/><path d="m20 9-3 3 3 3"/></svg>忘却之庭</div>
+                <div class="btl-card-stars" id="forgotten-hall-stars"></div>
+                <div class="btl-card-stat" id="forgotten-hall-stat">--</div>
+              </div>
+              <div class="btl-card-date" id="forgotten-hall-date"></div>
+              <div class="btl-card-bar" id="forgotten-hall-bar" style="display:none"><div class="btl-card-fill"></div></div>
+            </div>
+            <div class="btl-card" id="btl-pure-fiction">
+              <div class="btl-card-row">
+                <div class="btl-card-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><path d="M8 11h8"/><path d="M8 7h6"/></svg>虚构叙事</div>
+                <div class="btl-card-stars" id="pure-fiction-stars"></div>
+                <div class="btl-card-stat" id="pure-fiction-stat">--</div>
+              </div>
+              <div class="btl-card-date" id="pure-fiction-date"></div>
+              <div class="btl-card-bar" style="display:none"><div class="btl-card-fill"></div></div>
+            </div>
+            <div class="btl-card" id="btl-apocalyptic-shadow">
+              <div class="btl-card-row">
+                <div class="btl-card-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M12 3a9 9 0 0 1 9 9"/><circle cx="12" cy="12" r="3"/></svg>末日幻影</div>
+                <div class="btl-card-stars" id="apocalyptic-shadow-stars"></div>
+                <div class="btl-card-stat" id="apocalyptic-shadow-stat">--</div>
+              </div>
+              <div class="btl-card-date" id="apocalyptic-shadow-date"></div>
+              <div class="btl-card-bar" style="display:none"><div class="btl-card-fill"></div></div>
+            </div>
+            <div class="btl-card" id="btl-challenge-peak">
+              <div class="btl-card-row">
+                <div class="btl-card-name btl-card-name-peak"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 12h8"/><path d="M10 16h4"/></svg>最高挑战</div>
+                <div class="btl-card-stat" id="challenge-peak-stat">--</div>
+              </div>
+              <div class="btl-card-date" id="challenge-peak-date"></div>
+              <div class="btl-card-bar" id="challenge-peak-bar" style="display:none"><div class="btl-card-fill"></div></div>
+            </div>
+          </div>
         </div>
 
-        <div class="battle-card">
-          <div class="battle-card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue)"><path d="M12 2v20"/><path d="M20 12H4"/><path d="m15 4-3 3-3-3"/><path d="m9 20 3-3 3 3"/><path d="m4 15 3-3-3-3"/><path d="m20 9-3 3 3 3"/></svg>忘却之庭</div>
-          <div class="battle-card-stars" id="forgotten-hall-stars"></div>
-          <div class="battle-card-stat" id="forgotten-hall-stat">--</div>
-          <div class="battle-card-date"></div>
-          <div class="battle-card-progress" style="display:none"><div class="challenge-bar-fill"></div></div>
-        </div>
-        <div class="battle-card">
-          <div class="battle-card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue)"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><path d="M8 11h8"/><path d="M8 7h6"/></svg>虚构叙事</div>
-          <div class="battle-card-stars" id="pure-fiction-stars"></div>
-          <div class="battle-card-stat" id="pure-fiction-stat">--</div>
-          <div class="battle-card-date"></div>
-          <div class="battle-card-progress" style="display:none"><div class="challenge-bar-fill"></div></div>
-        </div>
-        <div class="battle-card">
-          <div class="battle-card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--blue)"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M12 3a9 9 0 0 1 9 9"/><circle cx="12" cy="12" r="3"/></svg>末日幻影</div>
-          <div class="battle-card-stars" id="apocalyptic-shadow-stars"></div>
-          <div class="battle-card-stat" id="apocalyptic-shadow-stat">--</div>
-          <div class="battle-card-date"></div>
-          <div class="battle-card-progress" style="display:none"><div class="challenge-bar-fill"></div></div>
-        </div>
-        <div class="battle-card">
-          <div class="battle-card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--orange)"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 12h8"/><path d="M10 16h4"/></svg>最高挑战</div>
-          <div class="battle-card-stat" id="challenge-peak-stat">--</div>
-          <div class="battle-card-date"></div>
-          <div class="battle-card-progress" style="display:none"><div class="challenge-bar-fill"></div></div>
-        </div>
-
-        <div class="divider"></div>
-        <div class="tab-section-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          周常进度
-        </div>
-
-        <div class="weekly-row">
-          <span class="weekly-label">差分宇宙</span>
-          <span class="weekly-value">--</span>
-          <div class="weekly-bar" id="weekly-rogue-bar"><div class="weekly-bar-fill"></div></div>
-        </div>
-        <div class="weekly-row">
-          <span class="weekly-label">财富造物主</span>
-          <span class="weekly-value">--</span>
-          <div class="weekly-bar" id="weekly-gold-bar"><div class="weekly-bar-fill"></div></div>
-        </div>
-        <div class="weekly-row">
-          <span class="weekly-label">每日实训</span>
-          <span class="weekly-value">--</span>
-          <div class="weekly-bar" id="weekly-train-bar"><div class="weekly-bar-fill"></div></div>
+        <div class="more-section">
+          <div class="more-section-header">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            周常进度
+          </div>
+          <div class="more-group-card">
+            <div class="btl-weekly" id="btl-weekly-rogue">
+              <div class="btl-weekly-label">差分宇宙</div>
+              <div class="btl-weekly-track"><div class="btl-weekly-fill" id="weekly-rogue-bar"></div></div>
+              <div class="btl-weekly-value" id="weekly-rogue-val">--</div>
+            </div>
+            <div class="btl-weekly" id="btl-weekly-gold">
+              <div class="btl-weekly-label">财富造物主</div>
+              <div class="btl-weekly-track"><div class="btl-weekly-fill" id="weekly-gold-bar"></div></div>
+              <div class="btl-weekly-value" id="weekly-gold-val">--</div>
+            </div>
+            <div class="btl-weekly" id="btl-weekly-train">
+              <div class="btl-weekly-label">每日实训</div>
+              <div class="btl-weekly-track"><div class="btl-weekly-fill" id="weekly-train-bar"></div></div>
+              <div class="btl-weekly-value" id="weekly-train-val">--</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- ════════ TAB 3: 活动·档案 ════════ -->
       <div id="tab-more" class="tab-content">
-        <div id="ledger-card">
-          <div class="tab-section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div class="more-section">
+          <div class="more-section-header">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             开拓月历
           </div>
-          <div class="ledger-row">
-            <span>星琼</span>
-            <span id="ledger-hcoin">--</span>
-          </div>
-          <div class="ledger-row">
-            <span>星轨票</span>
-            <span id="ledger-pass">--</span>
-          </div>
-          <div class="ledger-row ledger-row-rate">
-            <span>较上月</span>
-            <span id="ledger-hcoin-rate"></span>
+          <div id="ledger-card" class="more-group-card">
+            <div class="more-stat-row">
+              <div class="more-stat-label">星琼</div>
+              <div class="more-stat-value" id="ledger-hcoin">--</div>
+            </div>
+            <div class="more-stat-row">
+              <div class="more-stat-label">星轨票</div>
+              <div class="more-stat-value" id="ledger-pass">--</div>
+            </div>
+            <div class="more-stat-row more-stat-row-rate">
+              <div class="more-stat-label">较上月</div>
+              <div class="more-stat-value more-stat-rate" id="ledger-hcoin-rate"></div>
+            </div>
           </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div id="banner-section">
-          <div class="tab-section-title" id="banner-toggle">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <div class="more-section">
+          <div class="more-section-header">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             活动卡池 (<span id="banner-count">0</span>)
-            <span id="banner-icon">▾</span>
           </div>
-          <div id="banner-list"></div>
+          <div id="banner-list" class="more-group-card"></div>
         </div>
 
-        <div class="divider" id="archive-divider"></div>
-
-        <div id="archive-section" class="empty">
-          <div class="tab-section-title" id="archive-toggle">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            模拟宇宙档案
-            <span id="archive-icon">▾</span>
-          </div>
-          <div id="archive-content" class="hidden"></div>
+        <div class="more-section" id="archive-section" class="empty">
         </div>
       </div>
 
@@ -207,54 +235,70 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             通知设置
           </div>
-          <div class="widget-group">
-            <div class="setting-row toggle-row">
-              <label><span>体力提醒</span>
-                <input type="checkbox" class="notif-toggle" data-key="stamina_enabled" />
-              </label>
+          <div class="widget-group notif-group">
+            <div class="setting-row">
+              <label><span>体力提醒</span></label>
+              <input type="checkbox" class="notif-toggle" data-key="stamina_enabled" />
             </div>
-            <div class="setting-row threshold-row" data-depends="stamina_enabled">
-              <label>阈值 轻度:</label>
-              <input type="number" class="notif-input" data-key="stamina_threshold_mild" min="0" max="100" step="5" />
-              <label>阈值 紧急:</label>
-              <input type="number" class="notif-input" data-key="stamina_threshold_urgent" min="0" max="100" step="5" />
+            <div class="notif-sub" data-depends="stamina_enabled">
+              <div class="notif-sub-row">
+                <div class="threshold-group">
+                  <label>轻度</label>
+                  <input type="number" class="notif-input" data-key="stamina_threshold_mild" min="0" max="100" step="5" />
+                </div>
+                <div class="threshold-group">
+                  <label>紧急</label>
+                  <input type="number" class="notif-input" data-key="stamina_threshold_urgent" min="0" max="100" step="5" />
+                </div>
+              </div>
             </div>
-            <div class="setting-row toggle-row">
-              <label><span>派遣完成</span>
-                <input type="checkbox" class="notif-toggle" data-key="expedition_enabled" />
-              </label>
+            <div class="setting-row">
+              <label><span>派遣完成</span></label>
+              <input type="checkbox" class="notif-toggle" data-key="expedition_enabled" />
             </div>
-            <div class="setting-row toggle-row">
-              <label><span>备用体力满</span>
-                <input type="checkbox" class="notif-toggle" data-key="reserve_stamina_enabled" />
-              </label>
+            <div class="setting-row">
+              <label><span>备用体力满</span></label>
+              <input type="checkbox" class="notif-toggle" data-key="reserve_stamina_enabled" />
             </div>
-            <div class="setting-row toggle-row">
-              <label><span>签到提醒</span>
-                <input type="checkbox" class="notif-toggle" data-key="sign_reminder_enabled" />
-              </label>
+            <div class="setting-row">
+              <label><span>签到提醒</span></label>
+              <input type="checkbox" class="notif-toggle" data-key="sign_reminder_enabled" />
             </div>
-            <div class="setting-row" data-depends="sign_reminder_enabled">
-              <label>提醒时间 (HH:MM):</label>
-              <input type="text" class="notif-input" data-key="sign_reminder_time" placeholder="20:00" />
+            <div class="notif-sub" data-depends="sign_reminder_enabled">
+              <div class="notif-sub-row">
+                <label>时间</label>
+                <input type="time" class="notif-input" data-key="sign_reminder_time" value="20:00" />
+              </div>
             </div>
-            <div class="setting-row toggle-row">
-              <label><span>模拟宇宙未打</span>
-                <input type="checkbox" class="notif-toggle" data-key="rogue_reminder_enabled" />
-              </label>
+            <div class="setting-row">
+              <label><span>模拟宇宙未打</span></label>
+              <input type="checkbox" class="notif-toggle" data-key="rogue_reminder_enabled" />
             </div>
-            <div class="setting-row" data-depends="rogue_reminder_enabled">
-              <label>提醒时间 (EEE HH:MM):</label>
-              <input type="text" class="notif-input" data-key="rogue_reminder_time" placeholder="Sun 20:00" />
+            <div class="notif-sub" data-depends="rogue_reminder_enabled">
+              <div class="notif-sub-row">
+                <label>星期</label>
+                <select class="notif-input" data-key="rogue_reminder_day">
+                  <option value="Sun">周日</option>
+                  <option value="Mon">周一</option>
+                  <option value="Tue">周二</option>
+                  <option value="Wed">周三</option>
+                  <option value="Thu">周四</option>
+                  <option value="Fri">周五</option>
+                  <option value="Sat">周六</option>
+                </select>
+                <label>时间</label>
+                <input type="time" class="notif-input" data-key="rogue_reminder_time" value="20:00" />
+              </div>
             </div>
-            <div class="setting-row toggle-row">
-              <label><span>每日摘要</span>
-                <input type="checkbox" class="notif-toggle" data-key="digest_enabled" />
-              </label>
+            <div class="setting-row">
+              <label><span>每日摘要</span></label>
+              <input type="checkbox" class="notif-toggle" data-key="digest_enabled" />
             </div>
-            <div class="setting-row" data-depends="digest_enabled">
-              <label>推送时间 (HH:MM):</label>
-              <input type="text" class="notif-input" data-key="digest_time" placeholder="09:00" />
+            <div class="notif-sub" data-depends="digest_enabled">
+              <div class="notif-sub-row">
+                <label>时间</label>
+                <input type="time" class="notif-input" data-key="digest_time" value="09:00" />
+              </div>
             </div>
           </div>
           <div class="button-row">
@@ -293,6 +337,24 @@
           <button id="refresh-btn" title="刷新">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </button>
+        </div>
+      </div>
+
+      <!-- ════════ Onboarding Welcome Overlay ════════ -->
+      <div id="welcome-overlay" class="hidden">
+        <div class="welcome-steps" id="welcome-dots">
+          <div class="welcome-step-dot active"></div>
+          <div class="welcome-step-dot"></div>
+          <div class="welcome-step-dot"></div>
+          <div class="welcome-step-dot"></div>
+          <div class="welcome-step-dot"></div>
+        </div>
+        <div id="welcome-content" class="welcome-content">
+          <!-- Filled by JS per step -->
+        </div>
+        <div class="welcome-footer">
+          <button class="welcome-btn-secondary" id="welcome-skip">跳过引导</button>
+          <button class="welcome-btn-primary" id="welcome-next">下一步</button>
         </div>
       </div>
     </div>

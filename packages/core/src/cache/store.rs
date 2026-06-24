@@ -5,8 +5,13 @@ pub struct CacheDb {
     pub conn: Connection,
 }
 
-fn db_path() -> PathBuf {
-    if let Some(base) = dirs::data_dir() {
+fn db_path(data_dir: &str) -> PathBuf {
+    let base = if data_dir.is_empty() {
+        dirs::data_dir()
+    } else {
+        Some(PathBuf::from(data_dir))
+    };
+    if let Some(base) = base {
         let p = base.join("mihoyo-widget").join("cache.db");
         if let Some(parent) = p.parent() {
             std::fs::create_dir_all(parent).ok();
@@ -18,15 +23,15 @@ fn db_path() -> PathBuf {
 
 impl Default for CacheDb {
     fn default() -> Self {
-        Self::open().unwrap_or_else(|_| Self {
+        Self::open("").unwrap_or_else(|_| Self {
             conn: Connection::open_in_memory().unwrap(),
         })
     }
 }
 
 impl CacheDb {
-    pub fn open() -> Result<Self, String> {
-        let path = db_path();
+    pub fn open(data_dir: &str) -> Result<Self, String> {
+        let path = db_path(data_dir);
         let conn = Connection::open(&path).map_err(|e| e.to_string())?;
         // Performance: WAL mode for concurrent read/write from poller + IPC
         conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;").ok();

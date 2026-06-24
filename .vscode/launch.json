@@ -9,7 +9,10 @@
       "program": "${workspaceFolder}/target/debug/mihoyo-widget-desktop",
       "args": [],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "cargo-build-debug"
+      "preLaunchTask": "build-tauri-hot-reload",
+      "env": {
+        "WEBKIT_DISABLE_COMPOSITING_MODE": "1"
+      }
     },
     {
       "name": "🔧 Rust + production build",

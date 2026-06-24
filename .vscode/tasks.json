@@ -15,7 +15,15 @@
       "script": "dev",
       "path": "packages/frontend",
       "isBackground": true,
-      "presentation": { "reveal": "never" }
+      "presentation": { "reveal": "never" },
+      "problemMatcher": {
+        "pattern": { "regexp": "^(.*)$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Local:"
+        }
+      }
     },
     {
       "label": "cargo-build-debug",
@@ -23,6 +31,15 @@
       "command": "cargo build",
       "options": { "cwd": "${workspaceFolder}/apps/desktop" },
       "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$rustc"],
+      "presentation": { "reveal": "silent" }
+    },
+    {
+      "label": "cargo-build-debug-dev",
+      "type": "shell",
+      "command": "TAURI_DEV=true cargo build",
+      "options": { "cwd": "${workspaceFolder}/apps/desktop" },
+      "group": "build",
       "problemMatcher": ["$rustc"],
       "presentation": { "reveal": "silent" }
     },
@@ -40,6 +57,12 @@
       "type": "shell",
       "command": "echo 'build-all-debug'",
       "dependsOn": ["frontend-build", "cargo-build-debug"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "build-tauri-hot-reload",
+      "dependsOn": ["vite-dev", "cargo-build-debug-dev"],
       "dependsOrder": "sequence",
       "problemMatcher": []
     },

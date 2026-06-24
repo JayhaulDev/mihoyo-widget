@@ -15,6 +15,12 @@ pub struct AppState {
     pub cache_data: Mutex<CacheDb>,
 }
 
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+pub struct WelcomeStatus {
+    pub needs_onboarding: bool,
+    pub is_welcoming: bool,
+}
+
 // ── Sync commands ──
 
 #[tauri::command]
@@ -44,6 +50,40 @@ fn get_sign_status(state: State<AppState>) -> Result<serde_json::Value, String> 
 #[tauri::command]
 fn load_env_config(state: State<AppState>) -> Result<Settings, String> {
     Ok(state.config_data.blocking_lock().clone())
+}
+
+#[tauri::command]
+fn check_first_run(state: State<AppState>) -> Result<WelcomeStatus, String> {
+    let config = state.config_data.blocking_lock();
+    let needs_onboarding = !config.first_run_done;
+    Ok(WelcomeStatus {
+        needs_onboarding,
+        is_welcoming: needs_onboarding,
+    })
+}
+
+#[tauri::command]
+fn complete_first_run(state: State<AppState>) -> Result<String, String> {
+    let mut config = state.config_data.blocking_lock();
+    config.first_run_done = true;
+    config.save_to_runtime()?;
+    Ok("ok".into())
+}
+
+#[tauri::command]
+fn get_data_dir(state: State<AppState>) -> Result<String, String> {
+    let config = state.config_data.blocking_lock();
+    Ok(config.data_dir.clone())
+}
+
+#[tauri::command]
+fn set_data_dir(state: State<AppState>, data_dir: String) -> Result<String, String> {
+    {
+        let mut config = state.config_data.blocking_lock();
+        config.data_dir = data_dir;
+        config.save_to_runtime()?;
+    }
+    Ok("ok".into())
 }
 
 // ── Async commands ──
@@ -137,12 +177,113 @@ async fn save_config(
     Ok("ok".into())
 }
 
+#[tauri::command]
+async fn pick_data_dir(app: AppHandle) -> Result<String, String> {
+    use tauri_plugin_dialog::DialogExt;
+
+    let file = app.dialog()
+        .file()
+        .blocking_pick_folder();
+
+    match file {
+        Some(path) => Ok(path.to_string()),
+        None => Err("No directory selected".into()),
+    }
+}
+
+#[tauri::command]
+async fn open_login_webview(app: AppHandle) -> Result<String, String> {
+    use std::str::FromStr;
+    let url = tauri::Url::from_str("https://user.mihoyo.com/").map_err(|e| e.to_string())?;
+    let _ = tauri::WebviewWindowBuilder::new(
+        &app,
+        "login-window",
+        tauri::WebviewUrl::External(url),
+    )
+    .title("米游社登录")
+    .inner_size(360.0, 560.0)
+    .center()
+    .decorations(false)
+    .resizable(false)
+    .build()
+    .map_err(|e| e.to_string())?;
+
+    if let Some(w) = app.get_webview_window("login-window") {
+        let _ = w.set_focus();
+    }
+
+    Ok("opened".into())
+}
+
+/// Called from the main window when user clicks "capture cookies".
+/// Injects JS into the login window to read cookies/localStorage,
+/// then pipes the result back via the `_on_captured_cookies` command.
+///
+/// SAFETY: eval() is used to extract user's own cookies from a webview
+/// they logged into — no external untrusted input is evaluated.
+#[tauri::command]
+async fn capture_login_cookies(app: AppHandle) -> Result<String, String> {
+    let webview = app.get_webview_window("login-window")
+        .ok_or_else(|| "Login window not found. Open the login page first.".to_string())?;
+
+    // Injected JS reads cookies and calls back via __TAURI_INTERNALS__.invoke
+    // which is available in all Tauri webviews including external URLs.
+    let js = r#"
+        (function() {
+            try {
+                var cookies = document.cookie.split(';').map(function(c) { return c.trim(); });
+                var cookieObj = {};
+                cookies.forEach(function(c) {
+                    var eq = c.indexOf('=');
+                    if (eq > 0) cookieObj[c.slice(0, eq).trim()] = c.slice(eq + 1);
+                });
+                var stoken = '', stuid = '', mid = '';
+                try {
+                    stoken = window.localStorage.getItem('stoken') || cookieObj['stoken'] || '';
+                    stuid = window.localStorage.getItem('stuid') || cookieObj['stuid'] || '';
+                    mid = window.localStorage.getItem('mid') || cookieObj['mid'] || '';
+                } catch(e) {}
+                window.__TAURI_INTERNALS__.invoke('_on_captured_cookies', {
+                    cookie: document.cookie,
+                    stoken: stoken,
+                    stuid: stuid,
+                    mid: mid,
+                    uid: cookieObj['login_uid'] || cookieObj['ltuid'] || stuid || ''
+                });
+            } catch(e) {
+                console.error('capture error', e);
+            }
+        })();
+    "#;
+
+    let _ = webview.eval(js);
+    // Close the login window — the captured data will arrive via
+    // the _on_captured_cookies command handler.
+    let _ = webview.close();
+
+    Ok("capturing".into())
+}
+
+#[tauri::command]
+fn _on_captured_cookies(app: AppHandle, cookie: String, stoken: String, stuid: String, mid: String, uid: String) {
+    let _ = app.emit("login-cookies-captured", serde_json::json!({
+        "cookie": cookie,
+        "stoken": stoken,
+        "stuid": stuid,
+        "mid": mid,
+        "uid": uid,
+    }));
+}
+
 fn rebuild_tray_menu(app: &tauri::AppHandle, notif_mode: bool) {
     let menu = {
         let m = tauri::menu::MenuBuilder::new(app)
             .item(&tauri::menu::MenuItemBuilder::with_id("show", "显示/隐藏窗口")
                 .accelerator("CmdOrCtrl+Shift+H").build(app).unwrap())
             .item(&tauri::menu::MenuItemBuilder::with_id("refresh", "刷新数据")
+                .build(app).unwrap())
+            .separator()
+            .item(&tauri::menu::MenuItemBuilder::with_id("show-welcome", "欢迎引导")
                 .build(app).unwrap())
             .separator();
         let m = if notif_mode {
@@ -182,6 +323,10 @@ fn handle_tray_menu(app: &tauri::AppHandle, event: tauri::menu::MenuEvent) {
             if let Some(w) = window {
                 let _ = w.emit("manual-refresh", ());
             }
+        }
+        "show-welcome" => {
+            // Emit event to frontend to show welcome overlay
+            let _ = app.emit("show-welcome", ());
         }
         "toggle-notification-mode" => {
             let state = app.state::<AppState>();
@@ -232,7 +377,7 @@ fn handle_tray_menu(app: &tauri::AppHandle, event: tauri::menu::MenuEvent) {
 
 pub fn run() {
     let mut settings = Settings::load().unwrap_or_default();
-    let cache = CacheDb::open().unwrap_or_default();
+    let cache = CacheDb::open(&settings.data_dir).unwrap_or_default();
     cache.migrate().ok();
 
     if settings.device_fp.is_empty() {
@@ -253,6 +398,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(AppState {
             config_data: Mutex::new(settings.clone()),
             cache_data: Mutex::new(cache),
@@ -265,6 +411,14 @@ pub fn run() {
             force_refresh,
             load_env_config,
             save_config,
+            check_first_run,
+            complete_first_run,
+            get_data_dir,
+            set_data_dir,
+            pick_data_dir,
+            open_login_webview,
+            capture_login_cookies,
+            _on_captured_cookies,
         ])
         .setup(|app| {
             // Build system tray with menu
