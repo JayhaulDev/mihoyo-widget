@@ -398,9 +398,9 @@ async fn run_poller(app: AppHandle) {
                         let config = state.config_data.lock().await.notification.clone();
                         drop(state);
                         check_rules(&data, Some(old_data), &app, &config);
-                    }
-
-                    {
+                        check_digest(&data, &app, &config);
+                    } else {
+                        // No old data — can only send digest (no diff-based rules)
                         let state = app.state::<AppState>();
                         let config = state.config_data.lock().await.notification.clone();
                         drop(state);

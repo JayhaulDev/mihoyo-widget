@@ -862,6 +862,10 @@ $('settings-save').addEventListener('click', async () => {
     notif[key] = val;
   });
   nc.notification = notif;
+  // 保留从设置页面无法修改的字段
+  if (config?.notification?.notification_mode != null) {
+    nc.notification.notification_mode = config.notification.notification_mode;
+  }
   try {
     await invoke('save_config', { newConfig: nc });
     isSettingsOpen = false;
