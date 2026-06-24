@@ -18,6 +18,7 @@ let rogueArchive = null;
 let currentTab = 'overview';
 let previousTab = 'overview';
 let isSettingsOpen = false;
+let settingsStack = ['settings-root'];
 
 function $(id) {
   return document.getElementById(id);
@@ -76,6 +77,120 @@ function renderTab() {
   }
   $('settings-btn')?.classList.toggle('active', isSettingsOpen);
 }
+
+// ── Settings drill-down navigation ──
+function saveCurrentSettings() {
+  // Stub — will be implemented in Task 4
+}
+
+function pushSubpage(pageId) {
+  const current = settingsStack[settingsStack.length - 1];
+  const currentEl = $(current);
+  const nextEl = $(pageId);
+  if (!nextEl || current === pageId) return;
+  // Save current page before leaving
+  saveCurrentSettings();
+  // Animate out current, in next
+  currentEl.classList.remove('active');
+  currentEl.classList.add('exit-left');
+  nextEl.classList.add('enter-right');
+  // Force reflow for transition
+  nextEl.offsetHeight;
+  nextEl.classList.remove('enter-right');
+  nextEl.classList.add('active');
+  settingsStack.push(pageId);
+  renderSettingsNav();
+  // Cleanup after animation
+  setTimeout(() => {
+    currentEl.classList.remove('exit-left');
+  }, 300);
+}
+
+function popSubpage() {
+  if (settingsStack.length <= 1) return;
+  saveCurrentSettings();
+  const leaving = settingsStack.pop();
+  const target = settingsStack[settingsStack.length - 1];
+  const leavingEl = $(leaving);
+  const targetEl = $(target);
+  // Animate out current (right), in target (from left)
+  leavingEl.classList.remove('active');
+  leavingEl.classList.add('exit-left');
+  targetEl.style.transform = 'translateX(-30px)';
+  targetEl.style.opacity = '0';
+  targetEl.classList.add('active');
+  targetEl.offsetHeight;
+  targetEl.style.transform = '';
+  targetEl.style.opacity = '';
+  renderSettingsNav();
+  setTimeout(() => {
+    leavingEl.classList.remove('exit-left');
+  }, 300);
+}
+
+function closeSettings() {
+  settingsStack = ['settings-root'];
+  // Reset all pages to clean state
+  document.querySelectorAll('.settings-page').forEach((el) => {
+    el.classList.remove('active', 'exit-left', 'enter-right');
+    el.style.transform = '';
+    el.style.opacity = '';
+  });
+  $('settings-root')?.classList.add('active');
+  isSettingsOpen = false;
+  currentTab = previousTab;
+  updateTabBar();
+  renderTab();
+}
+
+function renderSettingsNav() {
+  const isRoot = settingsStack.length <= 1;
+  const backBtn = $('settings-back');
+  const doneBtn = $('settings-done');
+  const titleEl = $('settings-title');
+  const currentPage = settingsStack[settingsStack.length - 1];
+  // Title mapping
+  const titles = {
+    'settings-root': '设置',
+    'settings-account': '账号',
+    'settings-storage': '数据存储',
+    'settings-notifications': '通知',
+    'settings-general': '通用',
+  };
+  titleEl.textContent = titles[currentPage] || '设置';
+  if (isRoot) {
+    backBtn.classList.add('hidden');
+    doneBtn.classList.remove('hidden');
+    doneBtn.textContent = '完成';
+  } else {
+    backBtn.classList.remove('hidden');
+    const parentTitle = titles[settingsStack[settingsStack.length - 2]] || '设置';
+    document.getElementById('settings-back-text').textContent = parentTitle;
+    doneBtn.classList.add('hidden');
+  }
+}
+
+// Settings nav event bindings
+document.getElementById('settings-pages')?.addEventListener('click', (e) => {
+  const menuRow = e.target.closest('.settings-menu-row[data-page]');
+  if (menuRow) {
+    pushSubpage(menuRow.dataset.page);
+    return;
+  }
+});
+
+$('settings-back')?.addEventListener('click', popSubpage);
+
+// Close on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && isSettingsOpen) {
+    if (settingsStack.length > 1) {
+      popSubpage();
+    } else {
+      closeSettings();
+    }
+  }
+});
 
 // ═══════════════════════════════════════
 //    TAB 1: 仪表盘
@@ -838,7 +953,19 @@ document.querySelectorAll('.tab-item').forEach((el) => {
   el.addEventListener('click', () => switchTab(el.dataset.tab));
 });
 
-$('settings-btn').addEventListener('click', () => switchTab('settings'));
+$('settings-btn').addEventListener('click', () => {
+  if (!isSettingsOpen) {
+    settingsStack = ['settings-root'];
+    document.querySelectorAll('.settings-page').forEach((el) => {
+      el.classList.remove('active', 'exit-left', 'enter-right');
+      el.style.transform = '';
+      el.style.opacity = '';
+    });
+    $('settings-root')?.classList.add('active');
+    renderSettingsNav();
+  }
+  switchTab('settings');
+});
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault();
   switchTab('settings');
