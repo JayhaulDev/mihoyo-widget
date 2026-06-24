@@ -204,120 +204,235 @@
 
       <!-- ════════ Settings View ════════ -->
       <div id="settings-view" class="tab-content">
-        <div class="tab-section-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          设置
+        <!-- Navigation bar -->
+        <div id="settings-nav">
+          <button id="settings-back" class="hidden">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            <span id="settings-back-text">设置</span>
+          </button>
+          <span id="settings-title">设置</span>
+          <button id="settings-done">完成</button>
         </div>
-        <div class="widget-group">
-          <div class="setting-row">
-            <label>Cookie</label>
-            <input type="password" id="input-cookie" placeholder="完整 Cookie" />
-          </div>
-          <div class="setting-row">
-            <label>SToken</label>
-            <input type="password" id="input-stoken" placeholder="SToken" />
-          </div>
-          <div class="setting-row">
-            <label>UID</label>
-            <input type="text" id="input-uid" placeholder="游戏 UID" />
-          </div>
-          <div class="setting-row">
-            <label>STUID</label>
-            <input type="text" id="input-stuid" placeholder="账户 STUID" />
-          </div>
-          <div class="setting-row">
-            <label>MID</label>
-            <input type="text" id="input-mid" placeholder="账户 MID" />
-          </div>
-          <div class="setting-hint">修改后自动保存并刷新</div>
-          <div class="divider"></div>
-          <div class="tab-section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/></svg>
-            数据目录
-          </div>
-          <div class="setting-row">
-            <label>数据存储位置</label>
-            <div style="display:flex;gap:4px">
-              <input type="text" id="input-data-dir" placeholder="默认位置" style="flex:1" />
-              <button id="settings-pick-dir" style="background:var(--bg-elevated);border:none;border-radius:10px;padding:6px 12px;color:var(--text);font-size:11px;cursor:pointer;white-space:nowrap">浏览</button>
-            </div>
-          </div>
-          <div class="divider"></div>
-          <div class="tab-section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            通知设置
-          </div>
-          <div class="widget-group notif-group">
-            <div class="setting-row">
-              <label><span>体力提醒</span></label>
-              <input type="checkbox" class="notif-toggle" data-key="stamina_enabled" />
-            </div>
-            <div class="notif-sub" data-depends="stamina_enabled">
-              <div class="notif-sub-row">
-                <div class="threshold-group">
-                  <label>轻度</label>
-                  <input type="number" class="notif-input" data-key="stamina_threshold_mild" min="0" max="100" step="5" />
+
+        <!-- Pages container -->
+        <div id="settings-pages">
+
+          <!-- ── Root Menu ── -->
+          <div id="settings-root" class="settings-page active">
+            <div class="settings-group">
+              <div class="settings-menu-row" data-page="settings-account">
+                <div class="settings-menu-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </div>
-                <div class="threshold-group">
-                  <label>紧急</label>
-                  <input type="number" class="notif-input" data-key="stamina_threshold_urgent" min="0" max="100" step="5" />
+                <div class="settings-menu-label">
+                  <span class="settings-menu-title">账号</span>
+                  <span class="settings-menu-summary" id="summary-account">未配置</span>
+                </div>
+                <div class="settings-menu-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                 </div>
               </div>
             </div>
-            <div class="setting-row">
-              <label><span>派遣完成</span></label>
-              <input type="checkbox" class="notif-toggle" data-key="expedition_enabled" />
-            </div>
-            <div class="setting-row">
-              <label><span>备用体力满</span></label>
-              <input type="checkbox" class="notif-toggle" data-key="reserve_stamina_enabled" />
-            </div>
-            <div class="setting-row">
-              <label><span>签到提醒</span></label>
-              <input type="checkbox" class="notif-toggle" data-key="sign_reminder_enabled" />
-            </div>
-            <div class="notif-sub" data-depends="sign_reminder_enabled">
-              <div class="notif-sub-row">
-                <label>时间</label>
-                <input type="time" class="notif-input" data-key="sign_reminder_time" value="20:00" />
+
+            <div class="settings-group">
+              <div class="settings-menu-row" data-page="settings-storage">
+                <div class="settings-menu-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/></svg>
+                </div>
+                <div class="settings-menu-label">
+                  <span class="settings-menu-title">数据存储</span>
+                  <span class="settings-menu-summary" id="summary-storage">默认位置</span>
+                </div>
+                <div class="settings-menu-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
               </div>
             </div>
-            <div class="setting-row">
-              <label><span>模拟宇宙未打</span></label>
-              <input type="checkbox" class="notif-toggle" data-key="rogue_reminder_enabled" />
-            </div>
-            <div class="notif-sub" data-depends="rogue_reminder_enabled">
-              <div class="notif-sub-row">
-                <label>星期</label>
-                <select class="notif-input" data-key="rogue_reminder_day">
-                  <option value="Sun">周日</option>
-                  <option value="Mon">周一</option>
-                  <option value="Tue">周二</option>
-                  <option value="Wed">周三</option>
-                  <option value="Thu">周四</option>
-                  <option value="Fri">周五</option>
-                  <option value="Sat">周六</option>
-                </select>
-                <label>时间</label>
-                <input type="time" class="notif-input" data-key="rogue_reminder_time" value="20:00" />
+
+            <div class="settings-group">
+              <div class="settings-menu-row" data-page="settings-notifications">
+                <div class="settings-menu-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </div>
+                <div class="settings-menu-label">
+                  <span class="settings-menu-title">通知</span>
+                  <span class="settings-menu-summary" id="summary-notifications">关闭</span>
+                </div>
+                <div class="settings-menu-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
               </div>
             </div>
-            <div class="setting-row">
-              <label><span>每日摘要</span></label>
-              <input type="checkbox" class="notif-toggle" data-key="digest_enabled" />
-            </div>
-            <div class="notif-sub" data-depends="digest_enabled">
-              <div class="notif-sub-row">
-                <label>时间</label>
-                <input type="time" class="notif-input" data-key="digest_time" value="09:00" />
+
+            <div class="settings-group">
+              <div class="settings-menu-row" data-page="settings-general">
+                <div class="settings-menu-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </div>
+                <div class="settings-menu-label">
+                  <span class="settings-menu-title">通用</span>
+                  <span class="settings-menu-summary" id="summary-general">轮询 90s</span>
+                </div>
+                <div class="settings-menu-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
               </div>
             </div>
           </div>
-          <div class="button-row">
-            <button id="settings-save">保存</button>
-            <button id="settings-close">取消</button>
+
+          <!-- ── Account Subpage ── -->
+          <div id="settings-account" class="settings-page">
+            <div class="settings-group">
+              <div class="setting-field-row">
+                <label class="setting-field-label">Cookie</label>
+                <div class="setting-password-wrap">
+                  <input type="password" class="setting-field-input" id="input-cookie" placeholder="完整 Cookie" autocomplete="off" />
+                  <button class="setting-password-toggle" data-for="input-cookie" title="显示/隐藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="setting-field-row">
+                <label class="setting-field-label">SToken</label>
+                <div class="setting-password-wrap">
+                  <input type="password" class="setting-field-input" id="input-stoken" placeholder="SToken" autocomplete="off" />
+                  <button class="setting-password-toggle" data-for="input-stoken" title="显示/隐藏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="setting-field-row">
+                <label class="setting-field-label">UID</label>
+                <input type="text" class="setting-field-input" id="input-uid" placeholder="游戏 UID" />
+              </div>
+              <div class="setting-field-row">
+                <label class="setting-field-label">STUID</label>
+                <input type="text" class="setting-field-input" id="input-stuid" placeholder="账户 STUID" />
+              </div>
+              <div class="setting-field-row">
+                <label class="setting-field-label">MID</label>
+                <input type="text" class="setting-field-input" id="input-mid" placeholder="账户 MID" />
+              </div>
+            </div>
+            <div class="settings-group">
+              <div class="setting-action-row" id="settings-webview-login">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                从米游社登录
+              </div>
+            </div>
+            <div class="setting-page-hint">修改后自动保存</div>
           </div>
-        </div>
+
+          <!-- ── Storage Subpage ── -->
+          <div id="settings-storage" class="settings-page">
+            <div class="settings-group">
+              <div class="setting-field-row">
+                <label class="setting-field-label">存储位置</label>
+                <span style="font-size:12px;color:var(--text-muted);flex:1;text-align:right">默认位置</span>
+              </div>
+              <div class="setting-storage-path" id="settings-storage-path">~/.config/mihoyo-widget</div>
+              <button class="setting-storage-btn" id="settings-pick-dir">选择其他目录</button>
+            </div>
+            <div class="setting-page-hint">游戏数据、缓存和配置文件存储于此</div>
+          </div>
+
+          <!-- ── Notifications Subpage ── -->
+          <div id="settings-notifications" class="settings-page">
+            <div class="settings-scroll">
+              <div class="notif-group">
+                <div class="setting-row">
+                  <label><span>体力提醒</span></label>
+                  <input type="checkbox" class="notif-toggle" data-key="stamina_enabled" />
+                </div>
+                <div class="notif-sub" data-depends="stamina_enabled">
+                  <div class="notif-sub-row">
+                    <div class="threshold-group">
+                      <label>轻度</label>
+                      <input type="number" class="notif-input" data-key="stamina_threshold_mild" min="0" max="100" step="5" />
+                    </div>
+                    <div class="threshold-group">
+                      <label>紧急</label>
+                      <input type="number" class="notif-input" data-key="stamina_threshold_urgent" min="0" max="100" step="5" />
+                    </div>
+                  </div>
+                </div>
+                <div class="setting-row">
+                  <label><span>派遣完成</span></label>
+                  <input type="checkbox" class="notif-toggle" data-key="expedition_enabled" />
+                </div>
+                <div class="setting-row">
+                  <label><span>备用体力满</span></label>
+                  <input type="checkbox" class="notif-toggle" data-key="reserve_stamina_enabled" />
+                </div>
+                <div class="setting-row">
+                  <label><span>签到提醒</span></label>
+                  <input type="checkbox" class="notif-toggle" data-key="sign_reminder_enabled" />
+                </div>
+                <div class="notif-sub" data-depends="sign_reminder_enabled">
+                  <div class="notif-sub-row">
+                    <label>时间</label>
+                    <input type="time" class="notif-input" data-key="sign_reminder_time" value="20:00" />
+                  </div>
+                </div>
+                <div class="setting-row">
+                  <label><span>模拟宇宙未打</span></label>
+                  <input type="checkbox" class="notif-toggle" data-key="rogue_reminder_enabled" />
+                </div>
+                <div class="notif-sub" data-depends="rogue_reminder_enabled">
+                  <div class="notif-sub-row">
+                    <label>星期</label>
+                    <select class="notif-input" data-key="rogue_reminder_day">
+                      <option value="Sun">周日</option>
+                      <option value="Mon">周一</option>
+                      <option value="Tue">周二</option>
+                      <option value="Wed">周三</option>
+                      <option value="Thu">周四</option>
+                      <option value="Fri">周五</option>
+                      <option value="Sat">周六</option>
+                    </select>
+                    <label>时间</label>
+                    <input type="time" class="notif-input" data-key="rogue_reminder_time" value="20:00" />
+                  </div>
+                </div>
+                <div class="setting-row">
+                  <label><span>每日摘要</span></label>
+                  <input type="checkbox" class="notif-toggle" data-key="digest_enabled" />
+                </div>
+                <div class="notif-sub" data-depends="digest_enabled">
+                  <div class="notif-sub-row">
+                    <label>时间</label>
+                    <input type="time" class="notif-input" data-key="digest_time" value="09:00" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── General Subpage ── -->
+          <div id="settings-general" class="settings-page">
+            <div class="settings-group">
+              <div class="setting-info-row">
+                <span class="setting-info-label">刷新间隔</span>
+                <span class="setting-info-value" id="settings-poll-interval">90s</span>
+              </div>
+              <div class="setting-info-row">
+                <span class="setting-info-label">通知模式</span>
+                <span class="setting-info-value" id="settings-notif-mode">弹窗</span>
+              </div>
+              <div class="setting-info-row">
+                <span class="setting-info-label">版本号</span>
+                <span class="setting-info-value">0.1.0</span>
+              </div>
+            </div>
+            <div class="settings-group">
+              <div class="setting-action-row" id="settings-show-welcome">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                重新引导
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /settings-pages -->
       </div>
 
       <!-- ════════ Tab Bar ════════ -->
