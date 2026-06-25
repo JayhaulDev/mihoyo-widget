@@ -1,6 +1,7 @@
 use crate::api::challenge::de_mihoyo_date;
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[derive(Default)]
 pub struct BannerData {
     pub card_pools: Vec<ActInfo>,
     pub events: Vec<ActInfo>,
@@ -62,11 +63,6 @@ impl<'de> serde::Deserialize<'de> for BannerData {
     }
 }
 
-impl Default for BannerData {
-    fn default() -> Self {
-        Self { card_pools: Vec::new(), events: Vec::new() }
-    }
-}
 
 // ── Raw API types ──
 

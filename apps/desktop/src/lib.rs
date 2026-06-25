@@ -1,5 +1,8 @@
+// `drop(state)`/`drop(cache)` end borrows early in async context — not suppressing Drop, just lifetime annotation
+#![allow(clippy::drop_non_drop)]
+
 use game_hsr::api::client::HsrApiClient;
-use game_hsr::api::{WidgetData, PlayerInfo, RogueArchive};
+use game_hsr::api::{RogueArchive, PlayerInfo, WidgetData};
 use game_hsr::api::cache::{AllCachedData, HsrCache};
 use game_hsr::notify::{check_rules, check_digest};
 use mihoyo_core::cache::CacheDb;
@@ -192,24 +195,22 @@ async fn pick_data_dir(app: AppHandle) -> Result<String, String> {
 }
 
 fn build_capture_html() -> String {
-    format!(
-        r#"<html><meta charset="utf-8"><body><script>
-(function(){{
-    var c = document.cookie.split(';').map(function(x){{return x.trim();}});
-    var o = {{}};
-    c.forEach(function(x){{var e=x.indexOf('=');if(e>0)o[x.slice(0,e).trim()]=x.slice(e+1);}});
+    r#"<html><meta charset="utf-8"><body><script>
+(function(){
+    var c = document.cookie.split(';').map(function(x){return x.trim();});
+    var o = {};
+    c.forEach(function(x){var e=x.indexOf('=');if(e>0)o[x.slice(0,e).trim()]=x.slice(e+1);});
     var stoken='', stuid='', mid='';
-    try{{stoken=window.localStorage.getItem('stoken')||o['stoken']||'';}}catch(e){{}}
-    try{{stuid=window.localStorage.getItem('stuid')||o['stuid']||'';}}catch(e){{}}
-    try{{mid=window.localStorage.getItem('mid')||o['mid']||'';}}catch(e){{}}
+    try{stoken=window.localStorage.getItem('stoken')||o['stoken']||'';}catch(e){}
+    try{stuid=window.localStorage.getItem('stuid')||o['stuid']||'';}catch(e){}
+    try{mid=window.localStorage.getItem('mid')||o['mid']||'';}catch(e){}
     var uid=o['login_uid']||o['ltuid']||stuid||'';
-    window.__TAURI_INTERNALS__.invoke('_on_captured_cookies',{{
+    window.__TAURI_INTERNALS__.invoke('_on_captured_cookies',{
         cookie:document.cookie, stoken:stoken, stuid:stuid, mid:mid, uid:uid
-    }});
+    });
     window.__TAURI_INTERNALS__.invoke('close_login_window');
-}})();
-</script></body></html>"#
-    )
+})();
+</script></body></html>"#.to_string()
 }
 
 const LOGIN_INJECT_JS: &str = r#"

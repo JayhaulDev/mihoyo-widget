@@ -10,6 +10,7 @@
       "args": [],
       "cwd": "${workspaceFolder}",
       "preLaunchTask": "build-tauri-hot-reload",
+      "postDebugTask": "kill-tauri-processes",
       "env": {
         "WEBKIT_DISABLE_COMPOSITING_MODE": "1"
       }

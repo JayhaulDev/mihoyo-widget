@@ -21,21 +21,13 @@ pub(crate) struct PeakRaw {
 
 #[derive(serde::Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub(crate) struct PeakRecord {
     pub group: PeakGroup,
     pub boss_info: PeakBoss,
     pub current_max_floor: i64,
 }
 
-impl Default for PeakRecord {
-    fn default() -> Self {
-        Self {
-            group: PeakGroup::default(),
-            boss_info: PeakBoss::default(),
-            current_max_floor: 0,
-        }
-    }
-}
 
 #[derive(serde::Deserialize, Default)]
 #[serde(default)]

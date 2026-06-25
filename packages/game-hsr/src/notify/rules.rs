@@ -42,29 +42,26 @@ pub fn check_rules(
     }
 
     // 4. Sign reminder — only fire after configured time
-    if config.sign_reminder_enabled && !data.has_signed {
-        if is_time_reached(&config.sign_reminder_time) {
+    if config.sign_reminder_enabled && !data.has_signed
+        && is_time_reached(&config.sign_reminder_time) {
             if let Some(old) = old {
                 if old.has_signed {
                     notify(app, "今日未签到", "星穹铁道今日还未签到");
                 }
             }
         }
-    }
 
     // 5. Simulated universe not done this week — only fire after configured time
     if config.rogue_reminder_enabled
         && data.max_rogue_score > 0
         && data.current_rogue_score == 0
-    {
-        if is_time_reached(&config.rogue_reminder_time) {
+        && is_time_reached(&config.rogue_reminder_time) {
             if let Some(old) = old {
                 if old.current_rogue_score > 0 {
                     notify(app, "模拟宇宙未打", "本周模拟宇宙积分还未获取");
                 }
             }
         }
-    }
 }
 
 /// Check if current time has reached the given time specification.
@@ -74,7 +71,7 @@ pub fn check_rules(
 ///   "Sun 20:00"   — weekly, true if today matches weekday and HH:MM has passed
 fn is_time_reached(time_str: &str) -> bool {
     let now = chrono::Local::now();
-    let parts: Vec<&str> = time_str.trim().split_whitespace().collect();
+    let parts: Vec<&str> = time_str.split_whitespace().collect();
 
     let (hour, minute) = match parts.len() {
         1 => {

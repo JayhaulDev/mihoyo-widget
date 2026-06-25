@@ -89,6 +89,13 @@
         }
       },
       "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "kill-tauri-processes",
+      "type": "shell",
+      "command": "pkill -f 'mihoyo-widget-desktop' 2>/dev/null; lsof -ti:5173 | xargs kill 2>/dev/null; echo 'cleanup done'",
+      "presentation": { "reveal": "never" },
+      "problemMatcher": []
     }
   ]
 }

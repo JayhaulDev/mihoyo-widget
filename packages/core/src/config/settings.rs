@@ -94,11 +94,9 @@ fn env_path() -> PathBuf {
         dirs::download_dir().map(|h| h.join("Mihoyo-env.json")),
         dirs::config_dir().map(|h| h.join("mihoyo-widget").join("env.json")),
     ];
-    for c in candidates {
-        if let Some(p) = c {
-            if p.exists() {
-                return p;
-            }
+    for p in candidates.into_iter().flatten() {
+        if p.exists() {
+            return p;
         }
     }
     PathBuf::from("Mihoyo-env.json")
