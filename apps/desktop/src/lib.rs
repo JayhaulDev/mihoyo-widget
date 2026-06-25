@@ -191,32 +191,53 @@ async fn pick_data_dir(app: AppHandle) -> Result<String, String> {
     }
 }
 
+fn build_capture_html() -> String {
+    format!(
+        r#"<html><meta charset="utf-8"><body><script>
+(function(){{
+    var c = document.cookie.split(';').map(function(x){{return x.trim();}});
+    var o = {{}};
+    c.forEach(function(x){{var e=x.indexOf('=');if(e>0)o[x.slice(0,e).trim()]=x.slice(e+1);}});
+    var stoken='', stuid='', mid='';
+    try{{stoken=window.localStorage.getItem('stoken')||o['stoken']||'';}}catch(e){{}}
+    try{{stuid=window.localStorage.getItem('stuid')||o['stuid']||'';}}catch(e){{}}
+    try{{mid=window.localStorage.getItem('mid')||o['mid']||'';}}catch(e){{}}
+    var uid=o['login_uid']||o['ltuid']||stuid||'';
+    window.__TAURI_INTERNALS__.invoke('_on_captured_cookies',{{
+        cookie:document.cookie, stoken:stoken, stuid:stuid, mid:mid, uid:uid
+    }});
+    window.__TAURI_INTERNALS__.invoke('close_login_window');
+}})();
+</script></body></html>"#
+    )
+}
+
 const LOGIN_INJECT_JS: &str = r#"
 (function(){
     var id = '__mhy_toolbar';
     var old = document.getElementById(id);
-    if (old) old.remove();
+    if (old) { old.remove(); }
 
     var tb = document.createElement('div');
     tb.id = id;
     tb.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:999999;display:flex;gap:8px;padding:6px 16px;background:rgba(0,0,0,0.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:22px;color:#fff;font-size:13px;font-family:-apple-system,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,0.3);white-space:nowrap;';
 
     var closeBtn = document.createElement('span');
-    closeBtn.textContent = '✕ 关闭窗口';
+    closeBtn.textContent = '✕ 关闭';
     closeBtn.style.cssText = 'padding:4px 14px;cursor:pointer;opacity:0.85;';
-    closeBtn.onclick = function(){ try{ window.__TAURI_INTERNALS__.invoke('close_login_window'); }catch(e){} };
+    closeBtn.onclick = function(){ location.href = 'mhywidget://close'; };
 
     var capBtn = document.createElement('span');
-    capBtn.textContent = '✓ 获取Cookie';
+    capBtn.textContent = '✓ 获取Cookie并关闭';
     capBtn.style.cssText = 'padding:4px 14px;cursor:pointer;font-weight:600;background:rgba(255,255,255,0.15);border-radius:16px;';
-    capBtn.onclick = function(){ try{ window.__TAURI_INTERNALS__.invoke('capture_login_cookies'); }catch(e){} };
+    capBtn.onclick = function(){ location.href = 'mhywidget://capture'; };
 
     tb.appendChild(closeBtn);
     tb.appendChild(capBtn);
     document.body.appendChild(tb);
 
     document.addEventListener('keydown', function __mhy_esc(e){
-        if(e.key === 'Escape') try{ window.__TAURI_INTERNALS__.invoke('close_login_window'); }catch(e){}
+        if(e.key === 'Escape'){ location.href = 'mhywidget://close'; }
     });
 })();
 "#;
@@ -231,6 +252,9 @@ async fn open_login_webview(app: AppHandle) -> Result<String, String> {
         return Ok("already_open".into());
     }
 
+    let capture_html = build_capture_html();
+    let app2 = app.clone();
+
     let _ = tauri::WebviewWindowBuilder::new(
         &app,
         "login-window",
@@ -241,11 +265,31 @@ async fn open_login_webview(app: AppHandle) -> Result<String, String> {
     .center()
     .decorations(false)
     .resizable(false)
-    .on_page_load(move |_webview_window, payload| {
+    .on_page_load(move |webview_win, payload| {
         if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
-            if let Err(e) = _webview_window.eval(LOGIN_INJECT_JS) {
+            if let Err(e) = webview_win.eval(LOGIN_INJECT_JS) {
                 log::warn!("login toolbar inject failed: {}", e);
             }
+        }
+    })
+    .on_navigation(move |nav_url| {
+        match nav_url.scheme() {
+            "mhywidget" => match nav_url.host_str() {
+                Some("close") => {
+                    let _ = app2.get_webview_window("login-window").map(|w| w.close());
+                    let _ = app2.emit("login-window-closed", ());
+                    false
+                }
+                Some("capture") => {
+                    if let Some(w) = app2.get_webview_window("login-window") {
+                        let data_url = tauri::Url::parse(&format!("data:text/html,{}", capture_html)).unwrap();
+                        let _ = w.navigate(data_url);
+                    }
+                    false
+                }
+                _ => true,
+            },
+            _ => true,
         }
     })
     .build()
