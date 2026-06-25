@@ -10,6 +10,9 @@ on:
         required: false
         default: "v0.1.0-test"
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -79,3 +82,29 @@ jobs:
           path: |
             apps/desktop/target/release/bundle/
           if-no-files-found: warn
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/artifacts
+          merge-multiple: true
+      - name: Generate release body
+        run: |
+          VERSION="${TAG#v}"
+          awk -v ver="$VERSION" '
+            $0 ~ "^# " ver " " {found=1; next}
+            found && /^# / {exit}
+            found {print}
+          ' CHANGELOG.md > /tmp/release-body.md
+        env:
+          TAG: ${{ github.ref_name }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: /tmp/release-body.md
+          files: /tmp/artifacts/
