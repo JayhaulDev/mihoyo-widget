@@ -1291,6 +1291,106 @@ input[type='time']::-webkit-calendar-picker-indicator {
   font-family: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace;
 }
 
+/* ── Notifications subpage — unified with settings-group ── */
+#settings-notifications .settings-group {
+  background: var(--bg-elevated);
+  border-radius: 12px;
+  overflow: hidden;
+}
+#settings-notifications .notif-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  min-height: 40px;
+  border-bottom: 0.5px solid var(--gray-light);
+}
+#settings-notifications .notif-toggle-row:last-child {
+  border-bottom: none;
+}
+#settings-notifications .notif-toggle-row label {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+/* Sub-option rows inside settings-group — initially shown, JS hides on load */
+#settings-notifications .notif-sub.settings-field-row {
+  margin: 0;
+  margin-left: 16px;
+  padding: 8px 12px 8px 16px;
+  border-left: 1.5px solid var(--gray-light);
+  border-bottom: 0.5px solid var(--gray-light);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: auto;
+}
+#settings-notifications .notif-sub.settings-field-row .notif-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+#settings-notifications .notif-sub.settings-field-row .notif-sub-row label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+#settings-notifications .notif-sub.settings-field-row .notif-sub-row input,
+#settings-notifications .notif-sub.settings-field-row .notif-sub-row select {
+  background: var(--bg-secondary);
+  border: 0.5px solid var(--gray-light);
+  border-radius: 8px;
+  padding: 4px 8px;
+  color: var(--text);
+  font-size: 11px;
+  outline: none;
+  font-family: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace;
+  transition: border-color 0.15s;
+  flex: 1;
+  min-width: 0;
+}
+#settings-notifications .notif-sub.settings-field-row .notif-sub-row input:focus,
+#settings-notifications .notif-sub.settings-field-row .notif-sub-row select:focus {
+  border-color: var(--blue);
+}
+#settings-notifications .notif-sub.settings-field-row .notif-sub-row select {
+  font-family: -apple-system, 'SF Pro Text', sans-serif;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238e8e93' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 10px 6px;
+}
+#settings-notifications .notif-sub.settings-field-row .threshold-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+#settings-notifications .notif-sub.settings-field-row .threshold-group label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+#settings-notifications .notif-sub.settings-field-row input[type='number'] {
+  max-width: 64px;
+  text-align: center;
+}
+#settings-notifications .notif-sub.settings-field-row input[type='time'] {
+  min-width: 100px;
+  flex: none;
+}
+
+/* ── Login action rows hidden state ── */
+#settings-login-group .setting-action-row.hidden {
+  display: none;
+}
+
 /* ═══════════════════════════════════════
    TAB BAR (iOS style)
    ═══════════════════════════════════════ */

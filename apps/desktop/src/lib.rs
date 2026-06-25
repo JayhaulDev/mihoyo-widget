@@ -209,10 +209,22 @@ async fn open_login_webview(app: AppHandle) -> Result<String, String> {
     .map_err(|e| e.to_string())?;
 
     if let Some(w) = app.get_webview_window("login-window") {
+        // inject Escape-to-close listener
+        let _ = w.eval(r#"(function(){function init(){document.addEventListener('keydown',function(e){if(e.key==='Escape'){window.__TAURI_INTERNALS__.invoke('close_login_window')}})}if(document.body)init();else document.addEventListener('DOMContentLoaded',init)})()"#);
         let _ = w.set_focus();
     }
 
     Ok("opened".into())
+}
+
+#[tauri::command]
+async fn close_login_window(app: AppHandle) -> Result<String, String> {
+    if let Some(w) = app.get_webview_window("login-window") {
+        let _ = w.close();
+        Ok("closed".into())
+    } else {
+        Err("Login window not found".into())
+    }
 }
 
 /// Called from the main window when user clicks "capture cookies".
@@ -417,6 +429,7 @@ pub fn run() {
             set_data_dir,
             pick_data_dir,
             open_login_webview,
+            close_login_window,
             capture_login_cookies,
             _on_captured_cookies,
         ])

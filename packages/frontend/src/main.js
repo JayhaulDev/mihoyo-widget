@@ -166,13 +166,38 @@ $('settings-pick-dir')?.addEventListener('click', async () => {
   }
 });
 
-// WebView login
+// WebView login — open window, then show capture/close actions
 $('settings-webview-login')?.addEventListener('click', async () => {
   try {
     await invoke('open_login_webview');
+    $('settings-webview-login')?.classList.add('hidden');
+    $('settings-capture-cookies')?.classList.remove('hidden');
+    $('settings-close-login')?.classList.remove('hidden');
   } catch (e) {
     console.warn('Login webview failed:', e);
   }
+});
+
+// Capture cookies from the login window
+$('settings-capture-cookies')?.addEventListener('click', async () => {
+  try {
+    await invoke('capture_login_cookies');
+    $('settings-capture-cookies')?.classList.add('hidden');
+    $('settings-close-login')?.classList.add('hidden');
+    $('settings-webview-login')?.classList.remove('hidden');
+  } catch (e) {
+    console.warn('Capture failed:', e);
+  }
+});
+
+// Close login window without capturing
+$('settings-close-login')?.addEventListener('click', async () => {
+  try {
+    await invoke('close_login_window');
+  } catch {}
+  $('settings-capture-cookies')?.classList.add('hidden');
+  $('settings-close-login')?.classList.add('hidden');
+  $('settings-webview-login')?.classList.remove('hidden');
 });
 
 // Re-launch welcome

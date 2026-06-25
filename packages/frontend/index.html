@@ -314,10 +314,18 @@
                 <input type="text" class="setting-field-input" id="input-mid" placeholder="账户 MID" />
               </div>
             </div>
-            <div class="settings-group">
+            <div class="settings-group" id="settings-login-group">
               <div class="setting-action-row" id="settings-webview-login">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                 从米游社登录
+              </div>
+              <div class="setting-action-row hidden" id="settings-capture-cookies">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                获取 Cookie 并关闭
+              </div>
+              <div class="setting-action-row hidden" id="settings-close-login">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                关闭窗口
               </div>
             </div>
             <div class="setting-page-hint">修改后自动保存</div>
@@ -338,71 +346,69 @@
 
           <!-- ── Notifications Subpage ── -->
           <div id="settings-notifications" class="settings-page">
-            <div class="settings-scroll">
-              <div class="notif-group">
-                <div class="setting-row">
-                  <label><span>体力提醒</span></label>
-                  <input type="checkbox" class="notif-toggle" data-key="stamina_enabled" />
-                </div>
-                <div class="notif-sub" data-depends="stamina_enabled">
-                  <div class="notif-sub-row">
-                    <div class="threshold-group">
-                      <label>轻度</label>
-                      <input type="number" class="notif-input" data-key="stamina_threshold_mild" min="0" max="100" step="5" />
-                    </div>
-                    <div class="threshold-group">
-                      <label>紧急</label>
-                      <input type="number" class="notif-input" data-key="stamina_threshold_urgent" min="0" max="100" step="5" />
-                    </div>
+            <div class="settings-group">
+              <div class="setting-field-row notif-toggle-row">
+                <label class="setting-field-label" style="min-width:0;flex:1">体力提醒</label>
+                <input type="checkbox" class="notif-toggle" data-key="stamina_enabled" />
+              </div>
+              <div class="notif-sub settings-field-row" data-depends="stamina_enabled">
+                <div class="notif-sub-row" style="width:100%">
+                  <div class="threshold-group">
+                    <label>轻度</label>
+                    <input type="number" class="notif-input" data-key="stamina_threshold_mild" min="0" max="100" step="5" />
+                  </div>
+                  <div class="threshold-group">
+                    <label>紧急</label>
+                    <input type="number" class="notif-input" data-key="stamina_threshold_urgent" min="0" max="100" step="5" />
                   </div>
                 </div>
-                <div class="setting-row">
-                  <label><span>派遣完成</span></label>
-                  <input type="checkbox" class="notif-toggle" data-key="expedition_enabled" />
+              </div>
+              <div class="setting-field-row notif-toggle-row">
+                <label class="setting-field-label" style="min-width:0;flex:1">派遣完成</label>
+                <input type="checkbox" class="notif-toggle" data-key="expedition_enabled" />
+              </div>
+              <div class="setting-field-row notif-toggle-row">
+                <label class="setting-field-label" style="min-width:0;flex:1">备用体力满</label>
+                <input type="checkbox" class="notif-toggle" data-key="reserve_stamina_enabled" />
+              </div>
+              <div class="setting-field-row notif-toggle-row">
+                <label class="setting-field-label" style="min-width:0;flex:1">签到提醒</label>
+                <input type="checkbox" class="notif-toggle" data-key="sign_reminder_enabled" />
+              </div>
+              <div class="notif-sub settings-field-row" data-depends="sign_reminder_enabled">
+                <div class="notif-sub-row" style="width:100%">
+                  <label>时间</label>
+                  <input type="time" class="notif-input" data-key="sign_reminder_time" value="20:00" />
                 </div>
-                <div class="setting-row">
-                  <label><span>备用体力满</span></label>
-                  <input type="checkbox" class="notif-toggle" data-key="reserve_stamina_enabled" />
+              </div>
+              <div class="setting-field-row notif-toggle-row">
+                <label class="setting-field-label" style="min-width:0;flex:1">模拟宇宙未打</label>
+                <input type="checkbox" class="notif-toggle" data-key="rogue_reminder_enabled" />
+              </div>
+              <div class="notif-sub settings-field-row" data-depends="rogue_reminder_enabled">
+                <div class="notif-sub-row" style="width:100%">
+                  <label>星期</label>
+                  <select class="notif-input" data-key="rogue_reminder_day">
+                    <option value="Sun">周日</option>
+                    <option value="Mon">周一</option>
+                    <option value="Tue">周二</option>
+                    <option value="Wed">周三</option>
+                    <option value="Thu">周四</option>
+                    <option value="Fri">周五</option>
+                    <option value="Sat">周六</option>
+                  </select>
+                  <label>时间</label>
+                  <input type="time" class="notif-input" data-key="rogue_reminder_time" value="20:00" />
                 </div>
-                <div class="setting-row">
-                  <label><span>签到提醒</span></label>
-                  <input type="checkbox" class="notif-toggle" data-key="sign_reminder_enabled" />
-                </div>
-                <div class="notif-sub" data-depends="sign_reminder_enabled">
-                  <div class="notif-sub-row">
-                    <label>时间</label>
-                    <input type="time" class="notif-input" data-key="sign_reminder_time" value="20:00" />
-                  </div>
-                </div>
-                <div class="setting-row">
-                  <label><span>模拟宇宙未打</span></label>
-                  <input type="checkbox" class="notif-toggle" data-key="rogue_reminder_enabled" />
-                </div>
-                <div class="notif-sub" data-depends="rogue_reminder_enabled">
-                  <div class="notif-sub-row">
-                    <label>星期</label>
-                    <select class="notif-input" data-key="rogue_reminder_day">
-                      <option value="Sun">周日</option>
-                      <option value="Mon">周一</option>
-                      <option value="Tue">周二</option>
-                      <option value="Wed">周三</option>
-                      <option value="Thu">周四</option>
-                      <option value="Fri">周五</option>
-                      <option value="Sat">周六</option>
-                    </select>
-                    <label>时间</label>
-                    <input type="time" class="notif-input" data-key="rogue_reminder_time" value="20:00" />
-                  </div>
-                </div>
-                <div class="setting-row">
-                  <label><span>每日摘要</span></label>
-                  <input type="checkbox" class="notif-toggle" data-key="digest_enabled" />
-                </div>
-                <div class="notif-sub" data-depends="digest_enabled">
-                  <div class="notif-sub-row">
-                    <label>时间</label>
-                    <input type="time" class="notif-input" data-key="digest_time" value="09:00" />
-                  </div>
+              </div>
+              <div class="setting-field-row notif-toggle-row">
+                <label class="setting-field-label" style="min-width:0;flex:1">每日摘要</label>
+                <input type="checkbox" class="notif-toggle" data-key="digest_enabled" />
+              </div>
+              <div class="notif-sub settings-field-row" data-depends="digest_enabled">
+                <div class="notif-sub-row" style="width:100%">
+                  <label>时间</label>
+                  <input type="time" class="notif-input" data-key="digest_time" value="09:00" />
                 </div>
               </div>
             </div>
