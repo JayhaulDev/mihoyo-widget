@@ -197,6 +197,14 @@ function startRecording(row, action, keyEl, conflictEl) {
   const handler = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    // Escape cancels recording
+    if (e.key === 'Escape') {
+      keyEl.textContent = config?.shortcuts?.bindings[action] || '';
+      row.classList.remove('recording');
+      _recordingAction = null;
+      document.removeEventListener('keydown', handler);
+      return;
+    }
     // Ignore modifier-only keys
     if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return;
     const combo = [];
