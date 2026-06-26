@@ -1,2 +1,18 @@
 npx lint-staged
 cargo check 2>/dev/null || cargo check
+
+# ── 隐私泄露检查 ──
+# 检查本次 stage 的改动是否包含疑似凭据泄露
+STAGED=$(mktemp)
+git diff --cached -- . > "$STAGED"
+if grep -qE '(?:password|secret|api_key|access_token|refresh_token|private_key)\s*=\s*['"'"'"]?[^'"'"'",;]{8,}' "$STAGED" 2>/dev/null; then
+  echo "⚠️  检测到可能的凭据泄露在 staged 改动中。请检查。"
+  echo "   如需强制提交: git commit --no-verify"
+  exit 1
+fi
+if grep -qE '(?:cookie|stoken|stuid)\s*=\s*['"'"'"]?[a-zA-Z0-9_\-]{20,}' "$STAGED" 2>/dev/null; then
+  echo "⚠️  检测到可能的凭据泄露在 staged 改动中。请检查。"
+  echo "   如需强制提交: git commit --no-verify"
+  exit 1
+fi
+rm "$STAGED"
