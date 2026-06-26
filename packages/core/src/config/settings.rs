@@ -292,3 +292,60 @@ impl Settings {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_shortcut_config_defaults() {
+        let sc = ShortcutConfig::default();
+        assert_eq!(sc.bindings.get("toggle_window").unwrap(), "Ctrl+Shift+H");
+        assert_eq!(sc.bindings.get("refresh").unwrap(), "Ctrl+Shift+R");
+        assert_eq!(sc.bindings.get("quit").unwrap(), "Ctrl+Shift+Q");
+        assert!(sc.conflicts.is_empty());
+    }
+
+    #[test]
+    fn test_shortcut_config_skip_conflicts_serialization() {
+        let mut sc = ShortcutConfig::default();
+        sc.conflicts = vec!["toggle_window: failed".into()];
+        let json = serde_json::to_string(&sc).unwrap();
+        assert!(!json.contains("conflicts"));
+        assert!(json.contains("toggle_window"));
+    }
+
+    #[test]
+    fn test_system_config_default() {
+        let sys = SystemConfig::default();
+        assert!(sys.left_click_toggle);
+    }
+
+    #[test]
+    fn test_system_config_roundtrip() {
+        let sys = SystemConfig { left_click_toggle: false };
+        let json = serde_json::to_string(&sys).unwrap();
+        assert!(json.contains("left_click_toggle"));
+        let deserialized: SystemConfig = serde_json::from_str(&json).unwrap();
+        assert!(!deserialized.left_click_toggle);
+    }
+
+    #[test]
+    fn test_shortcut_in_settings_deser_default() {
+        // Old runtime.json without shortcuts/system should deserialize with defaults
+        let old = r#"{"cookie":"test","stoken":"","stuid":"","mid":"","device_id":"","device_fp":"","seed_id":"","seed_time":"","uid":"123","region":"prod_gf_cn","poll_interval_secs":90,"data_dir":"","first_run_done":false}"#;
+        let settings: Settings = serde_json::from_str(old).unwrap();
+        assert_eq!(settings.shortcuts.bindings.get("toggle_window").unwrap(), "Ctrl+Shift+H");
+        assert!(settings.system.left_click_toggle);
+    }
+
+    #[test]
+    fn test_shortcut_config_serde_roundtrip() {
+        let mut sc = ShortcutConfig::default();
+        sc.bindings.insert("toggle_window".into(), "Alt+1".into());
+        let json = serde_json::to_string(&sc).unwrap();
+        let deserialized: ShortcutConfig = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.bindings.get("toggle_window").unwrap(), "Alt+1");
+        assert_eq!(deserialized.bindings.get("refresh").unwrap(), "Ctrl+Shift+R");
+    }
+}
