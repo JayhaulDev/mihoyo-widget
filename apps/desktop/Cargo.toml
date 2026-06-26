@@ -1,6 +1,8 @@
 [package]
 name = "mihoyo-widget-desktop"
 version = "0.2.0"
+# Product version — sync with tauri.conf.json
+# Internal libs (core, game-hsr) are versioned independently
 edition = "2021"
 rust-version = "1.77.2"
 license = "MIT"

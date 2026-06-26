@@ -6,29 +6,28 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   check:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Install system deps (Tauri)
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: Install system deps
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-      - name: Rust check
+      - name: cargo check
         run: cargo check --workspace
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Frontend build
         run: |
           cd packages/frontend
-          npm install
+          npm ci
           npm run build
