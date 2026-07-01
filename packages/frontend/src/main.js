@@ -1353,6 +1353,63 @@ applyTheme();
 loadData();
 
 // ═══════════════════════════════════════
+//    STAGGERED REVEAL ANIMATION
+// ═══════════════════════════════════════
+function runStagger(container) {
+  if (!container) return;
+  const items = container.querySelectorAll(
+    '.ov-stamina-card, .more-group-card, .btl-card, .btl-weekly, .more-section-header, .ov-season-section'
+  );
+  items.forEach((el) => {
+    el.classList.add('stagger-item', 'stagger-hidden');
+  });
+  // Force reflow
+  void container.offsetHeight;
+  items.forEach((el, i) => {
+    setTimeout(() => {
+      el.classList.remove('stagger-hidden');
+      el.classList.add('stagger-visible');
+    }, 60 + i * 50);
+  });
+}
+
+// Override renderTab to trigger stagger after render
+const _origRenderTab = renderTab;
+renderTab = function () {
+  _origRenderTab();
+  const active = document.querySelector('.tab-content.active');
+  if (active) {
+    setTimeout(() => runStagger(active), 50);
+  }
+};
+
+// Override render functions that dynamically add elements
+const _origRenderDashboard = renderDashboard;
+renderDashboard = function () {
+  _origRenderDashboard();
+  const container = document.getElementById('tab-overview');
+  if (container && container.classList.contains('active')) {
+    setTimeout(() => runStagger(container), 50);
+  }
+};
+const _origRenderChallengeTab = renderChallengeTab;
+renderChallengeTab = function () {
+  _origRenderChallengeTab();
+  const container = document.getElementById('tab-battle');
+  if (container && container.classList.contains('active')) {
+    setTimeout(() => runStagger(container), 50);
+  }
+};
+const _origRenderMoreTab = renderMoreTab;
+renderMoreTab = function () {
+  _origRenderMoreTab();
+  const container = document.getElementById('tab-more');
+  if (container && container.classList.contains('active')) {
+    setTimeout(() => runStagger(container), 50);
+  }
+};
+
+// ═══════════════════════════════════════
 //    ONBOARDING WELCOME OVERLAY
 // ═══════════════════════════════════════
 

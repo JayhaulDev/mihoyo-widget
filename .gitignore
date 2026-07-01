@@ -26,6 +26,9 @@ env.json
 # ── Worktrees (isolated dev environments) ──
 .worktrees/
 
+# ── Local agent skills (Hermes/Claude Code symlinks, worktree local only) ──
+.agents/
+
 # ── Superpowers local notes (not for public repository) ──
 # 设计文档在 docs/specs/（已统一），本地缓存的 skill 不提交
 .claude/plugins/
